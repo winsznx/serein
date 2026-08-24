@@ -1,0 +1,469 @@
+{
+  "generatedBy": "packages/reference-model/scripts/generate-proof-corpus.ts",
+  "method": "Per weight vector, run the full rejection-sampling + prefix-interval algorithm N times and compare observed winner frequency with W_i / T. Intervals are Wilson score at z = 3.890592 (99.99%).",
+  "caveat": "This supplements the exactness proof in ARCHITECTURE.md; it is not the proof. Randomness here is a seeded splitmix64 test fixture, not the onchain CSPRNG.",
+  "samplesPerVector": 200000,
+  "vectors": [
+    {
+      "label": "1:1",
+      "weights": [
+        "1",
+        "1"
+      ],
+      "total": "2",
+      "samples": 200000,
+      "meanAttemptsPerDraw": 1,
+      "participants": [
+        {
+          "index": 0,
+          "weight": "1",
+          "expectedProbability": 0.5,
+          "observedProbability": 0.49948,
+          "wins": 99896,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.49513039220751315,
+            0.5038296864974018
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 1,
+          "weight": "1",
+          "expectedProbability": 0.5,
+          "observedProbability": 0.50052,
+          "wins": 100104,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.4961703135025981,
+            0.5048696077924867
+          ],
+          "expectedInsideInterval": true
+        }
+      ],
+      "allExpectedInsideInterval": true
+    },
+    {
+      "label": "1:2",
+      "weights": [
+        "1",
+        "2"
+      ],
+      "total": "3",
+      "samples": 200000,
+      "meanAttemptsPerDraw": 1.334795,
+      "participants": [
+        {
+          "index": 0,
+          "weight": "1",
+          "expectedProbability": 0.3333333333333333,
+          "observedProbability": 0.33431,
+          "wins": 66862,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.3302186370189637,
+            0.33842644109139075
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 1,
+          "weight": "2",
+          "expectedProbability": 0.6666666666666666,
+          "observedProbability": 0.66569,
+          "wins": 133138,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.6615735589086091,
+            0.6697813629810363
+          ],
+          "expectedInsideInterval": true
+        }
+      ],
+      "allExpectedInsideInterval": true
+    },
+    {
+      "label": "1:2:7",
+      "weights": [
+        "1",
+        "2",
+        "7"
+      ],
+      "total": "10",
+      "samples": 200000,
+      "meanAttemptsPerDraw": 1.597025,
+      "participants": [
+        {
+          "index": 0,
+          "weight": "1",
+          "expectedProbability": 0.1,
+          "observedProbability": 0.100745,
+          "wins": 20149,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.09815663169555536,
+            0.10339379778690938
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 1,
+          "weight": "2",
+          "expectedProbability": 0.2,
+          "observedProbability": 0.199855,
+          "wins": 39971,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.196398866967955,
+            0.20335656166040122
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 2,
+          "weight": "7",
+          "expectedProbability": 0.7,
+          "observedProbability": 0.6994,
+          "wins": 139880,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.6953960877431137,
+            0.7033737319490544
+          ],
+          "expectedInsideInterval": true
+        }
+      ],
+      "allExpectedInsideInterval": true
+    },
+    {
+      "label": "uniform-6",
+      "weights": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "total": "6",
+      "samples": 200000,
+      "meanAttemptsPerDraw": 1.33492,
+      "participants": [
+        {
+          "index": 0,
+          "weight": "1",
+          "expectedProbability": 0.16666666666666666,
+          "observedProbability": 0.16658,
+          "wins": 33316,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.16336377146666897,
+            0.1698466935194762
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 1,
+          "weight": "1",
+          "expectedProbability": 0.16666666666666666,
+          "observedProbability": 0.167255,
+          "wins": 33451,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.16403347594264292,
+            0.17052688687846815
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 2,
+          "weight": "1",
+          "expectedProbability": 0.16666666666666666,
+          "observedProbability": 0.16694,
+          "wins": 33388,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.1637209448096511,
+            0.1702094656884759
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 3,
+          "weight": "1",
+          "expectedProbability": 0.16666666666666666,
+          "observedProbability": 0.16825,
+          "wins": 33650,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.1650207046772614,
+            0.17152950754502178
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 4,
+          "weight": "1",
+          "expectedProbability": 0.16666666666666666,
+          "observedProbability": 0.16637,
+          "wins": 33274,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.16315542286488216,
+            0.16963507390594024
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 5,
+          "weight": "1",
+          "expectedProbability": 0.16666666666666666,
+          "observedProbability": 0.164605,
+          "wins": 32921,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.16140437612717465,
+            0.1678563877862923
+          ],
+          "expectedInsideInterval": true
+        }
+      ],
+      "allExpectedInsideInterval": true
+    },
+    {
+      "label": "whale-97:3",
+      "weights": [
+        "97",
+        "3"
+      ],
+      "total": "100",
+      "samples": 200000,
+      "meanAttemptsPerDraw": 1.280455,
+      "participants": [
+        {
+          "index": 0,
+          "weight": "97",
+          "expectedProbability": 0.97,
+          "observedProbability": 0.96964,
+          "wins": 193928,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.9681114460131156,
+            0.9710974713400927
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 1,
+          "weight": "3",
+          "expectedProbability": 0.03,
+          "observedProbability": 0.03036,
+          "wins": 6072,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.028902528659907264,
+            0.03188855398688424
+          ],
+          "expectedInsideInterval": true
+        }
+      ],
+      "allExpectedInsideInterval": true
+    },
+    {
+      "label": "with-zero-weights",
+      "weights": [
+        "1",
+        "0",
+        "4",
+        "0",
+        "5"
+      ],
+      "total": "10",
+      "samples": 200000,
+      "meanAttemptsPerDraw": 1.60028,
+      "participants": [
+        {
+          "index": 0,
+          "weight": "1",
+          "expectedProbability": 0.1,
+          "observedProbability": 0.098355,
+          "wins": 19671,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.0957946178539377,
+            0.1009761733684253
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 1,
+          "weight": "0",
+          "expectedProbability": 0,
+          "observedProbability": 0,
+          "wins": 0,
+          "structurallyExcluded": true,
+          "wilson99_99": null,
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 2,
+          "weight": "4",
+          "expectedProbability": 0.4,
+          "observedProbability": 0.400765,
+          "wins": 80153,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.39650938151302917,
+            0.40503563826052996
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 3,
+          "weight": "0",
+          "expectedProbability": 0,
+          "observedProbability": 0,
+          "wins": 0,
+          "structurallyExcluded": true,
+          "wilson99_99": null,
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 4,
+          "weight": "5",
+          "expectedProbability": 0.5,
+          "observedProbability": 0.50088,
+          "wins": 100176,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.49653029064270854,
+            0.5052295761643582
+          ],
+          "expectedInsideInterval": true
+        }
+      ],
+      "allExpectedInsideInterval": true
+    },
+    {
+      "label": "power-of-two-total",
+      "weights": [
+        "3",
+        "5",
+        "8"
+      ],
+      "total": "16",
+      "samples": 200000,
+      "meanAttemptsPerDraw": 1,
+      "participants": [
+        {
+          "index": 0,
+          "weight": "3",
+          "expectedProbability": 0.1875,
+          "observedProbability": 0.188195,
+          "wins": 37639,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.18481823892801305,
+            0.19161895450670888
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 1,
+          "weight": "5",
+          "expectedProbability": 0.3125,
+          "observedProbability": 0.31222,
+          "wins": 62444,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.3082029389153095,
+            0.316265482640381
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 2,
+          "weight": "8",
+          "expectedProbability": 0.5,
+          "observedProbability": 0.499585,
+          "wins": 99917,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.49523538340735446,
+            0.5039346794052219
+          ],
+          "expectedInsideInterval": true
+        }
+      ],
+      "allExpectedInsideInterval": true
+    },
+    {
+      "label": "large-realistic",
+      "weights": [
+        "3600000000",
+        "1800000000",
+        "900000000",
+        "450000000"
+      ],
+      "total": "6750000000",
+      "samples": 200000,
+      "meanAttemptsPerDraw": 1.269795,
+      "participants": [
+        {
+          "index": 0,
+          "weight": "3600000000",
+          "expectedProbability": 0.5333333333333333,
+          "observedProbability": 0.533075,
+          "wins": 106615,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.5287323738185271,
+            0.5374126200948051
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 1,
+          "weight": "1800000000",
+          "expectedProbability": 0.26666666666666666,
+          "observedProbability": 0.267485,
+          "wins": 53497,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.2636518334081351,
+            0.27135335904058877
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 2,
+          "weight": "900000000",
+          "expectedProbability": 0.13333333333333333,
+          "observedProbability": 0.133235,
+          "wins": 26647,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.1303063556211461,
+            0.1362191563176804
+          ],
+          "expectedInsideInterval": true
+        },
+        {
+          "index": 3,
+          "weight": "450000000",
+          "expectedProbability": 0.06666666666666667,
+          "observedProbability": 0.066205,
+          "wins": 13241,
+          "structurallyExcluded": false,
+          "wilson99_99": [
+            0.06407458499179496,
+            0.06840107231330027
+          ],
+          "expectedInsideInterval": true
+        }
+      ],
+      "allExpectedInsideInterval": true
+    }
+  ],
+  "vectorsOutsideInterval": []
+}

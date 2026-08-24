@@ -1,0 +1,21 @@
+{
+  "name": "@serein/protocol-sdk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared ABIs, deployment addresses, and protocol types for Serein. One source of truth for anything that talks to the chain.",
+  "license": "MIT",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "tsx scripts/generate-abis.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

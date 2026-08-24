@@ -1,0 +1,54 @@
+# secrets — never commit
+.secrets/
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+out/
+.next/
+.open-next/
+.wrangler/
+artifacts/
+cache/
+cache_hardhat/
+typechain-types/
+coverage/
+*.tsbuildinfo
+
+# test output
+playwright-report/
+test-results/
+blob-report/
+
+# os
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# local scratch
+tmp/
+.scratch/
+types/
+
+# vendored Zama SDK browser bundle, restaged from the lockfile on every build
+apps/web/public/zama/
+apps/web/public/tfhe_bg.wasm
+apps/web/public/kms_lib_bg.wasm
+apps/web/public/workerHelpers.js
+
+# generated protocol ABIs are committed; deployment manifests are too
+cloudflare-env.d.ts
+.open-next/

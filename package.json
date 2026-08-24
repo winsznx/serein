@@ -1,0 +1,38 @@
+{
+  "name": "serein",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serein — confidential no-loss prize savings protocol on Ethereum Sepolia and the Zama Protocol",
+  "license": "MIT",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=20.18.0"
+  },
+  "scripts": {
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run compile && pnpm run test:fast",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "compile": "pnpm --filter @serein/contracts compile",
+    "test:fast": "pnpm --filter @serein/reference-model test",
+    "test": "pnpm --filter @serein/reference-model test && pnpm --filter @serein/contracts test",
+    "test:fhe": "pnpm --filter @serein/contracts test",
+    "test:e2e": "pnpm --filter @serein/web test:e2e",
+    "benchmark": "pnpm --filter @serein/contracts benchmark",
+    "proof:local": "pnpm --filter @serein/reference-model proof",
+    "deploy:sepolia": "pnpm --filter @serein/contracts deploy:sepolia",
+    "proof:sepolia": "pnpm --filter @serein/contracts proof:sepolia",
+    "web:dev": "pnpm --filter @serein/web dev",
+    "web:build": "pnpm --filter @serein/web build",
+    "web:preview": "pnpm --filter @serein/web preview",
+    "web:deploy": "pnpm --filter @serein/web deploy",
+    "cleanroom": "bash scripts/cleanroom.sh",
+    "wallets:generate": "node scripts/generate-wallets.mjs"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3",
+    "ethereum-cryptography": "^3.2.0"
+  }
+}

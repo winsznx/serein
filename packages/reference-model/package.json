@@ -1,0 +1,33 @@
+{
+  "name": "@serein/reference-model",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deterministic plaintext BigInt reference implementation of Serein's encrypted TWAB and exact weighted selection. Used as the parity oracle for the FHE implementation.",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "proof": "tsx scripts/generate-proof-corpus.ts",
+    "prepare": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ]
+}

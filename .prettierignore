@@ -1,0 +1,12 @@
+pnpm-lock.yaml
+packages/protocol-sdk/src/generated/
+packages/contracts/artifacts/
+packages/contracts/cache_hardhat/
+packages/contracts/types/
+packages/reference-model/dist/
+apps/web/.next/
+apps/web/.open-next/
+apps/web/public/
+evidence/raw/
+evidence/benchmarks/
+deployments/

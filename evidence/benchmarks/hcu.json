@@ -1,0 +1,93 @@
+{
+  "generatedBy": "packages/contracts/test/benchmark.hcu.test.ts",
+  "note": "Measured with the Zama Hardhat mock coprocessor, which meters the same operation costs the live coprocessor charges. Reproduce with `pnpm benchmark`.",
+  "limits": {
+    "sequential": 5000000,
+    "global": 20000000
+  },
+  "measurements": [
+    {
+      "operation": "addSavings (first, creates series)",
+      "globalHCU": 3203288,
+      "sequentialHCU": 1111000,
+      "evmGas": "1254210",
+      "globalHeadroomPercent": 83.98,
+      "sequentialHeadroomPercent": 77.78
+    },
+    {
+      "operation": "addSavings (subsequent)",
+      "globalHCU": 4158224,
+      "sequentialHCU": 1111000,
+      "evmGas": "1175933",
+      "globalHeadroomPercent": 79.21,
+      "sequentialHeadroomPercent": 77.78
+    },
+    {
+      "operation": "takeOutSavings",
+      "globalHCU": 3039096,
+      "sequentialHCU": 955032,
+      "evmGas": "792074",
+      "globalHeadroomPercent": 84.8,
+      "sequentialHeadroomPercent": 80.9
+    },
+    {
+      "operation": "closeDraw (aggregate weight + publish)",
+      "globalHCU": 1215064,
+      "sequentialHCU": 1215032,
+      "evmGas": "324381",
+      "globalHeadroomPercent": 93.92,
+      "sequentialHeadroomPercent": 75.7,
+      "participants": 8
+    },
+    {
+      "operation": "processSelectionBatch (at MAX_SELECTION_BATCH)",
+      "globalHCU": 15949768,
+      "sequentialHCU": 3582032,
+      "evmGas": "3288300",
+      "globalHeadroomPercent": 20.25,
+      "sequentialHeadroomPercent": 28.36,
+      "participants": 8,
+      "batchSize": 8
+    },
+    {
+      "operation": "processSelectionBatch (cold boundary cache)",
+      "globalHCU": 11853512,
+      "sequentialHCU": 2546032,
+      "evmGas": "1943610",
+      "globalHeadroomPercent": 40.73,
+      "sequentialHeadroomPercent": 49.08,
+      "participants": 4,
+      "batchSize": 4
+    },
+    {
+      "operation": "processSelectionBatch (batch of 1)",
+      "globalHCU": 2096128,
+      "sequentialHCU": 1769032,
+      "evmGas": "565205",
+      "globalHeadroomPercent": 89.52,
+      "sequentialHeadroomPercent": 64.62,
+      "participants": 1,
+      "batchSize": 1
+    },
+    {
+      "operation": "processSelectionBatch (batch of 2)",
+      "globalHCU": 4075256,
+      "sequentialHCU": 2028032,
+      "evmGas": "962172",
+      "globalHeadroomPercent": 79.62,
+      "sequentialHeadroomPercent": 59.44,
+      "participants": 2,
+      "batchSize": 2
+    },
+    {
+      "operation": "processSelectionBatch (batch of 4)",
+      "globalHCU": 8033512,
+      "sequentialHCU": 2546032,
+      "evmGas": "1756107",
+      "globalHeadroomPercent": 59.83,
+      "sequentialHeadroomPercent": 49.08,
+      "participants": 4,
+      "batchSize": 4
+    }
+  ]
+}

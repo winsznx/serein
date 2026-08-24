@@ -1,0 +1,18 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Build scripts are opt-in under pnpm 11. Only the ones we actually need run.
+# keccak and secp256k1 ship optional native bindings used by the Hardhat network; both fall back to
+# pure JS if the build is skipped, but the native path is meaningfully faster for the FHE mock suite.
+# workerd is the Cloudflare runtime the production preview runs in, so its postinstall is required.
+# unrs-resolver backs eslint's module resolution. bufferutil and utf-8-validate are optional ws
+# accelerators we do not need.
+allowBuilds:
+  bufferutil: false
+  esbuild: true
+  keccak: true
+  secp256k1: true
+  unrs-resolver: true
+  utf-8-validate: false
+  workerd: true

@@ -1,0 +1,9 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "commit": "pending",
+  "deployedAt": "",
+  "deployer": "",
+  "drawDurationSeconds": "900",
+  "contracts": {}
+}
