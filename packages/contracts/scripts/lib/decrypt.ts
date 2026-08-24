@@ -1,5 +1,7 @@
 import { fhevm } from "hardhat";
 
+import { withRelayerRetry } from "./relayer";
+
 export type Hex = `0x${string}`;
 
 type PublicDecryptResult = Awaited<ReturnType<typeof fhevm.publicDecrypt>>;
@@ -40,7 +42,10 @@ export interface DecryptedBoolean {
  * the adversarial tests confirm by trying.
  */
 export async function publicDecryptNumber(handle: string): Promise<DecryptedNumber> {
-  const result = await fhevm.publicDecrypt([handle]);
+  const result = await withRelayerRetry(() => fhevm.publicDecrypt([handle]), {
+    label: `publicDecrypt(${handle.slice(0, 12)}…)`,
+    log: (message) => console.log(message),
+  });
   const raw = clearValue(result, handle);
   if (typeof raw === "boolean") {
     throw new Error(`handle ${handle} decrypted to a boolean, expected a number`);
@@ -49,7 +54,10 @@ export async function publicDecryptNumber(handle: string): Promise<DecryptedNumb
 }
 
 export async function publicDecryptBoolean(handle: string): Promise<DecryptedBoolean> {
-  const result = await fhevm.publicDecrypt([handle]);
+  const result = await withRelayerRetry(() => fhevm.publicDecrypt([handle]), {
+    label: `publicDecrypt(${handle.slice(0, 12)}…)`,
+    log: (message) => console.log(message),
+  });
   const raw = clearValue(result, handle);
   return { value: Boolean(raw), proof: result.decryptionProof, handle };
 }

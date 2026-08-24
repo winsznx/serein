@@ -16,12 +16,23 @@ loadEnv({ path: resolve(__dirname, "../../.env") });
 loadEnv({ path: resolve(__dirname, "../../.secrets/wallets.env") });
 
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL ?? "";
-const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? "";
-const KEEPER_PRIVATE_KEY = process.env.KEEPER_PRIVATE_KEY ?? "";
 
-const sepoliaAccounts = [DEPLOYER_PRIVATE_KEY, KEEPER_PRIVATE_KEY].filter(
-  (key): key is string => key.length === 66 && key.startsWith("0x"),
-);
+/**
+ * Signer order is fixed and meaningful:
+ *
+ *   0 deployer — deploys, funds the prize source, and nothing else
+ *   1 keeper   — progresses draws; holds no privilege the public does not also have
+ *   2..4       — ephemeral participants used only for the live proof campaign
+ *
+ * Scripts index by position, so reordering this list changes who does what.
+ */
+const sepoliaAccounts = [
+  process.env.DEPLOYER_PRIVATE_KEY,
+  process.env.KEEPER_PRIVATE_KEY,
+  process.env.PARTICIPANT_A_PRIVATE_KEY,
+  process.env.PARTICIPANT_B_PRIVATE_KEY,
+  process.env.PARTICIPANT_C_PRIVATE_KEY,
+].filter((key): key is string => typeof key === "string" && key.length === 66 && key.startsWith("0x"));
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -60,6 +71,13 @@ const config: HardhatUserConfig = {
     apiKey: {
       sepolia: process.env.ETHERSCAN_API_KEY ?? "",
     },
+  },
+  // Sourcify needs no API key, so source verification is not gated on a credential the project
+  // might not have. Etherscan verification runs too when a key is configured.
+  sourcify: {
+    enabled: true,
+    apiUrl: "https://sourcify.dev/server",
+    browserUrl: "https://repo.sourcify.dev",
   },
   typechain: {
     outDir: "types",
