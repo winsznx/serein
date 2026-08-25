@@ -7,7 +7,7 @@ import { ethers, fhevm } from "hardhat";
 
 import { advanceDraw, closeIfDue, DRAW_STATUS_NAMES, type StepLog } from "./lib/draw-runner";
 import { addressOf, loadManifest } from "./lib/manifest";
-import { isTransientRelayerError, withRelayerRetry } from "./lib/relayer";
+import { isTransientRelayerError, withRelayerRetry, initFhevm } from "./lib/relayer";
 import type {
   ConfidentialUSDC,
   MockPrizeSource,
@@ -76,8 +76,7 @@ interface Evidence {
 async function main(): Promise<void> {
   const chainId = Number((await ethers.provider.getNetwork()).chainId);
   const manifest = loadManifest(chainId);
-  await fhevm.initializeCLIApi();
-  if (fhevm.isMock) throw new Error("live-proof must run against a real network");
+  await initFhevm(fhevm, { requireLive: true });
 
   const signers = await ethers.getSigners();
   const [deployer, keeper, alice, bob, carol] = signers;

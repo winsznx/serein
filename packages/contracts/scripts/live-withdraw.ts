@@ -5,7 +5,7 @@ import { FhevmType } from "@fhevm/hardhat-plugin";
 import { ethers, fhevm } from "hardhat";
 
 import { addressOf, loadManifest } from "./lib/manifest";
-import { withRelayerRetry } from "./lib/relayer";
+import { withRelayerRetry, initFhevm } from "./lib/relayer";
 import type { SereinPool } from "../types";
 
 /**
@@ -24,7 +24,7 @@ import type { SereinPool } from "../types";
 async function main(): Promise<void> {
   const chainId = Number((await ethers.provider.getNetwork()).chainId);
   const manifest = loadManifest(chainId);
-  await fhevm.initializeCLIApi();
+  await initFhevm(fhevm);
 
   const signers = await ethers.getSigners();
   const saver = signers[2];

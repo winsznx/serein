@@ -2,6 +2,7 @@ import { FhevmType } from "@fhevm/hardhat-plugin";
 import { ethers, fhevm } from "hardhat";
 
 import { addressOf, loadManifest } from "./lib/manifest";
+import { initFhevm } from "./lib/relayer";
 
 /**
  * A minimal live check that the Zama relayer path works on Sepolia before the full campaign runs.
@@ -23,7 +24,7 @@ async function main(): Promise<void> {
   const underlyingAddress = addressOf(manifest, "TestUSDC");
 
   // Tests get the plugin initialised for them; a `hardhat run` script has to ask.
-  await fhevm.initializeCLIApi();
+  await initFhevm(fhevm);
 
   console.log(`Live smoke check on chain ${chainId}`);
   console.log(`  actor    ${alice.address}`);

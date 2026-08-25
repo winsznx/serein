@@ -147,7 +147,35 @@ what you hold rather than reverting.
 
 ---
 
-## 10. The zero-weight path works
+## 10. A post-close withdrawal does not alter a frozen weight
+
+**Claim.** Weight is read from two frozen historical points, so activity after a draw closes cannot
+change the entry that draw already assigned.
+
+Draw #4 demonstrates this without a contrived setup. Participant A had exited completely and held
+zero principal when results were claimed, yet was a full participant in draw #4 with 25% odds: their
+withdrawal observations are timestamped 1787616456 and 1787616492, both after the epoch closed at 1787616228.
+
+```
+A: 100 × 900s =  90,000,000,000     (held the full epoch, withdrew afterwards)
+B: 250 × 900s = 225,000,000,000
+C:  50 × 900s =  45,000,000,000
+                ---------------
+   published  = 360,000,000,000     matches the on-chain verified aggregate
+```
+
+Anyone can check this: read `observationAt(A, i)` for the timestamps, `getDraw(4)` for the window and
+the published aggregate, and do the multiplication.
+
+|           |                                                                               |
+| --------- | ----------------------------------------------------------------------------- |
+| **Code**  | `EncryptedTWAB.weightBetween` — two frozen lookups                            |
+| **Tests** | Withdrawals at three separate draw stages, consistency still verified         |
+| **Live**  | Draw #4, [`evidence/live/draws/draw-4.json`](evidence/live/draws/draw-4.json) |
+
+---
+
+## 11. The zero-weight path works
 
 Not a designed demo — draw #1 hit it by accident, and the protocol handled it correctly. All three
 deposits landed 120 seconds _after_ draw #1's window closed, so its aggregate verified as `0` and it
@@ -165,4 +193,4 @@ Close [`0xcf4beaa4…`](https://sepolia.etherscan.io/tx/0xcf4beaa418f99dc6072ee6
 - No claim that this "scales". Cost is linear, measured, and bounded — a pool of hundreds is
   operable, a pool of tens of thousands would need the compaction work in DECISIONS.md.
 - No claim of anonymity. See [PRIVACY.md](PRIVACY.md) for the residual leaks.
-- Draw counts here are small. Two complete live draws plus one zero-weight draw, not hundreds.
+- Draw counts here are small. Three complete live draws plus one zero-weight draw, not hundreds.

@@ -80,3 +80,27 @@ export async function withRelayerRetry<T>(
     { cause: lastError },
   );
 }
+
+/**
+ * Initialise the FHEVM plugin, retrying transport failures.
+ *
+ * Initialisation fetches relayer metadata and key material — including a 4.4 MB CRS — so it is the
+ * single most likely place for a shared public service to time out. Without a retry here a campaign
+ * dies before its first transaction, which is both the least useful moment to fail and the easiest
+ * to recover from.
+ */
+export async function initFhevm(
+  fhevm: { initializeCLIApi(): Promise<void>; isMock: boolean },
+  options: { requireLive?: boolean; log?: (message: string) => void } = {},
+): Promise<void> {
+  const log = options.log ?? ((message: string) => console.log(message));
+  await withRelayerRetry(() => fhevm.initializeCLIApi(), {
+    label: "initialise FHEVM plugin",
+    attempts: 6,
+    baseDelayMs: 3_000,
+    log,
+  });
+  if (options.requireLive && fhevm.isMock) {
+    throw new Error("expected a live network, got the mock coprocessor");
+  }
+}
