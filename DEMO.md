@@ -1,0 +1,135 @@
+# Demo script
+
+A three-minute walkthrough. Recorded by a real person, at normal speed, with a real wallet.
+
+**Do not** AI-generate the voice or the video. Speak plainly; the mechanism is interesting enough
+without a pitch voice.
+
+**Live app:** https://serein.timjosh507.workers.dev
+
+## Before recording
+
+- A fresh browser profile with a wallet extension, on Sepolia, holding a little test ETH.
+- A second wallet (Wallet B) already holding savings — this is what makes step 7 land.
+- The keeper running (`keeper:sepolia`), so a draw closes during the recording.
+- Two tabs: the app, and `/proof`.
+
+Check the current draw's countdown first and start recording so that step 8 lands near the close.
+
+---
+
+## The script
+
+**0:00 — What it is** *(15s)*
+
+> This is Serein. It's a savings account that runs a prize draw. Your balance is encrypted, your odds
+> are encrypted, and your principal is never at risk. Everything you see is live on Sepolia.
+
+Landing page. Don't linger.
+
+**0:15 — Get in** *(35s)*
+
+Connect wallet → Add savings. Walk the three steps.
+
+> The faucet gives me test tokens. Then I make them private — and I want to be clear that *this*
+> transaction is public, you can see the amount on Etherscan. Everything after it isn't.
+
+Enter an amount, save it.
+
+> Notice this: "Encrypting your amount." That's happening in my browser. The plaintext never leaves.
+
+**0:50 — The signature move** *(30s)*
+
+On the savings home, the balance shows `••••••`.
+
+> That's not a loading state and it's not zero. The app genuinely cannot read my balance. To see it, I
+> sign a read authorisation — this doesn't move funds — and the value comes back to my browser only.
+
+Click Reveal, sign, show the number.
+
+> Refresh the page and it's dots again. It was never stored anywhere.
+
+Refresh to show it.
+
+**1:20 — Someone else's balance** *(20s)*
+
+Switch to `/proof`, or open Wallet B's address.
+
+> Here's another saver's balance handle. It's on-chain, anyone can read the handle. But it's a
+> pointer, not a number — and the relayer will not decrypt it for my wallet.
+
+Show the refusal, or the recorded refusals in the campaign artifact.
+
+**1:40 — The draw** *(45s)*
+
+Go to `/proof/draws/<current>` as the draw closes.
+
+> The draw just closed. It published exactly one number — the total weight, summed across everyone.
+> Not my weight, not anyone's balance. A sum.
+
+> It has to be public, and this is the interesting part: to pick a winner fairly you need a random
+> number spread evenly across that total. The coprocessor only gives you random numbers bounded by a
+> power of two. So Serein samples over the next power of two up, and throws the number away if it
+> lands too high. Conditioned on keeping it, it's exactly uniform. No rounding, no approximation.
+
+Point at the bound and the attempt count.
+
+> The random target itself stays encrypted. There's its handle — try to decrypt it, it's refused.
+> Then it walks the participant list under encryption to find whose share contains that point.
+> Nobody, including the people running this, learns who won.
+
+**2:25 — Your result** *(20s)*
+
+Back to the draw detail. Reveal the result.
+
+> No prize this draw — and notice the wording. My savings are exactly where I left them. Nothing was
+> lost, because nothing was ever at stake.
+
+If you won, show the amount instead. Don't celebrate; that's the point.
+
+> Everyone collects with the same button. A non-winner moves an encrypted zero, so collecting doesn't
+> tell anyone whether you won.
+
+**2:45 — Take it out** *(15s)*
+
+Withdraw.
+
+> And my principal comes back out. This works at every stage of a draw — mid-selection, keeper
+> offline, doesn't matter. Prize money and savings are in two different contracts with no path
+> between them.
+
+**3:00 — Close**
+
+> Verified contracts, no admin key, no owner. Everything I showed is on Sepolia and reproducible from
+> the repo.
+
+---
+
+## Optional: the recovery clip *(45s)*
+
+Worth recording separately if there's time. It demonstrates resumability better than any slide.
+
+1. Start a draw; run `processSelectionBatch` for part of the list.
+2. Kill the keeper mid-walk. Show the cursor stopped partway on `/proof/draws/<id>`.
+3. From a **completely different address**, continue: the cursor resumes exactly where it stopped.
+4. Finalize. Same draw, same result.
+
+> The keeper isn't privileged. It's a convenience. Anyone can finish a draw, and a batch that fails
+> just leaves the cursor where it was.
+
+---
+
+## Things to avoid
+
+- Don't call it anonymous or untraceable. It isn't, and PRIVACY.md says exactly why.
+- Don't skip the wrap-is-public disclosure. Volunteering it is the point.
+- Don't dress a non-winning draw as a near miss. It isn't a loss.
+- Don't quote a number you haven't measured. No APY — there is no yield.
+- Don't speed up the video to hide latency. Public-decryption round trips take a few seconds; say so
+  if it's noticeable.
+
+## If something breaks on camera
+
+The relayer is a shared public service and sometimes drops a request. If a reveal fails, say so and
+retry — the retry is honest and the recovery is part of the product. Don't cut it out and pretend it
+didn't happen.

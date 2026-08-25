@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 
 import { Button, cn } from "@/components/ui";
@@ -24,6 +24,17 @@ export function ConnectButton({ tone = "violet" }: { tone?: "violet" | "light" |
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Reading `window` during render would be a hydration bug: the server always sees "no window" and
+  // renders the connect button, while a wallet-less browser renders a different element — React
+  // reports that as an opaque minified mismatch on every app page. `useSyncExternalStore` gives the
+  // server and the first client render the same answer, and only then switches. It must sit above
+  // every early return so the hook order is stable.
+  const hasInjectedProvider = useSyncExternalStore(
+    subscribeToNothing,
+    () => "ethereum" in window,
+    () => true, // server snapshot: assume a provider, matching the optimistic first render
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -103,8 +114,7 @@ export function ConnectButton({ tone = "violet" }: { tone?: "violet" | "light" |
 
   // A browser with no injected provider and no WalletConnect has nothing to connect to. Saying so
   // beats a button that opens a menu with nothing in it.
-  const hasNothing =
-    others.length === 0 && typeof window !== "undefined" && !("ethereum" in window);
+  const hasNothing = others.length === 0 && !hasInjectedProvider;
 
   if (hasNothing) {
     return (
@@ -215,4 +225,13 @@ export function TestnetNotice({ className }: { className?: string }) {
       Sepolia testnet. Test tokens have no monetary value. Serein has not been independently audited.
     </p>
   );
+}
+
+/**
+ * The injected-provider check has no change events worth subscribing to — an extension that appears
+ * after load will be picked up on the next navigation. This satisfies `useSyncExternalStore`'s
+ * contract without pretending otherwise.
+ */
+function subscribeToNothing(): () => void {
+  return () => {};
 }

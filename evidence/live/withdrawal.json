@@ -1,0 +1,24 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "commit": "d61f0025eebdd96d522e5cb168b19fc598ccf80c",
+  "recordedAt": "2026-08-25T00:08:20.358Z",
+  "saver": "0xDc4CF937848129047de43AA5Ff8adb4620dB7B07",
+  "pool": "0x99eEAeAB7B8c1c9F953D4B266CA0691b9E241eaa",
+  "openingPrincipalUnits": "100000000",
+  "partialWithdrawal": {
+    "requestedUnits": "25000000",
+    "txHash": "0xa69d964b20bca66ed49037b227a669b23ffe393cbb4f804baa6f532ed7d6be0e",
+    "gasUsed": "1004207",
+    "principalAfterUnits": "75000000",
+    "exact": true
+  },
+  "overWithdrawal": {
+    "requestedUnits": "75000000000",
+    "txHash": "0x5d3a8f0800c35efba85759c08a7fd347a6961c847f75cd7e4df47800cfe63198",
+    "gasUsed": "1004211",
+    "principalAfterUnits": "0",
+    "clampedNotReverted": true,
+    "note": "Asking for 1000x the remaining balance succeeded and took exactly the balance. A revert here would let anyone probe a private balance by observing which amounts fail."
+  }
+}

@@ -59,7 +59,7 @@ export default function DrawsPage() {
     .map((id, index) => {
       const entry = data?.[index];
       if (!entry || entry.status !== "success") return null;
-      return { id, draw: toDrawView(entry.result as unknown as readonly unknown[]) };
+      return { id, draw: toDrawView(entry.result) };
     })
     .filter((entry): entry is { id: bigint; draw: DrawView } => entry !== null);
 

@@ -143,21 +143,47 @@ export interface DrawView {
   hasWinner: boolean;
 }
 
-/** Decode the tuple `SereinPool.getDraw` returns into a typed object. */
-export function toDrawView(raw: readonly unknown[]): DrawView {
+/**
+ * Decode what `SereinPool.getDraw` returns into a typed object.
+ *
+ * The shape depends on the decoder. `getDraw` returns a struct with named fields, so viem hands back
+ * an **object** keyed by field name, while a positional decoder hands back an array. Assuming either
+ * one produces `undefined` for every field under the other, and the first `BigInt(undefined)` throws
+ * — at runtime, in the browser, after hydration, which is an unpleasant place to find out.
+ *
+ * So this reads by name when names are present and falls back to position when they are not.
+ */
+export function toDrawView(raw: unknown): DrawView {
+  const source = raw as Record<string | number, unknown>;
+
+  const pick = (name: string, index: number): unknown => {
+    const named = source[name];
+    return named === undefined ? source[index] : named;
+  };
+
+  const asBigInt = (value: unknown, field: string): bigint => {
+    if (value === undefined || value === null) {
+      throw new Error(
+        `getDraw returned no value for "${field}". The decoded shape was ` +
+          `${Array.isArray(raw) ? "an array" : typeof raw} with keys [${Object.keys(source).join(", ")}].`,
+      );
+    }
+    return BigInt(value as string | number | bigint);
+  };
+
   return {
-    status: Number(raw[0]) as DrawStatus,
-    startTimestamp: BigInt(raw[1] as bigint),
-    endTimestamp: BigInt(raw[2] as bigint),
-    closedTimestamp: BigInt(raw[3] as bigint),
-    participantCount: Number(raw[4]),
-    selectionCursor: Number(raw[5]),
-    randomAttempts: Number(raw[6]),
-    verifiedTotalWeight: BigInt(raw[7] as bigint),
-    randomBound: BigInt(raw[8] as bigint),
-    totalVerified: Boolean(raw[9]),
-    consistencyVerified: Boolean(raw[10]),
-    hasWinner: Boolean(raw[11]),
+    status: Number(pick("status", 0)) as DrawStatus,
+    startTimestamp: asBigInt(pick("startTimestamp", 1), "startTimestamp"),
+    endTimestamp: asBigInt(pick("endTimestamp", 2), "endTimestamp"),
+    closedTimestamp: asBigInt(pick("closedTimestamp", 3), "closedTimestamp"),
+    participantCount: Number(pick("participantCount", 4)),
+    selectionCursor: Number(pick("selectionCursor", 5)),
+    randomAttempts: Number(pick("randomAttempts", 6)),
+    verifiedTotalWeight: asBigInt(pick("verifiedTotalWeight", 7), "verifiedTotalWeight"),
+    randomBound: asBigInt(pick("randomBound", 8), "randomBound"),
+    totalVerified: Boolean(pick("totalVerified", 9)),
+    consistencyVerified: Boolean(pick("consistencyVerified", 10)),
+    hasWinner: Boolean(pick("hasWinner", 11)),
   };
 }
 

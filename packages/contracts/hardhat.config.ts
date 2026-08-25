@@ -65,6 +65,9 @@ const config: HardhatUserConfig = {
       url: SEPOLIA_RPC_URL,
       chainId: 11155111,
       accounts: sepoliaAccounts,
+      // The default 20s is not enough for a shared endpoint under load; a headers timeout on the
+      // first `eth_chainId` would otherwise abort a whole campaign before it sent a transaction.
+      timeout: 120_000,
     },
   },
   etherscan: {

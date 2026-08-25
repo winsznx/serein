@@ -89,7 +89,7 @@ export function usePoolSnapshot(): PoolSnapshot {
     query: { enabled: ready && currentDrawId > 0n },
   });
 
-  const draw = drawQuery.data ? toDrawView(drawQuery.data as unknown as readonly unknown[]) : null;
+  const draw = drawQuery.data ? toDrawView(drawQuery.data) : null;
 
   return {
     currentDrawId,
@@ -118,7 +118,7 @@ export function useDraw(drawId: bigint | undefined) {
 
   return {
     ...query,
-    draw: query.data ? toDrawView(query.data as unknown as readonly unknown[]) : null,
+    draw: query.data ? toDrawView(query.data) : null,
   };
 }
 

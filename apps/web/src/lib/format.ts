@@ -57,17 +57,25 @@ export function formatCountdown(seconds: number): string {
   return `${secs}s`;
 }
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Format a chain timestamp identically on the server and in the browser.
+ *
+ * `toLocaleString` resolves against the runtime's timezone, so the server renders UTC and the client
+ * renders local — a hydration mismatch that React reports as an opaque minified error and that only
+ * shows up once something drives a real browser. Formatting explicitly in UTC removes the ambiguity,
+ * and labelling it UTC removes the ambiguity for the reader too.
+ */
 export function formatTimestamp(seconds: bigint | number): string {
   const millis = Number(seconds) * 1000;
   if (!Number.isFinite(millis) || millis <= 0) return "—";
-  return new Date(millis).toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZoneName: "short",
-  });
+  const date = new Date(millis);
+  const pad = (value: number): string => String(value).padStart(2, "0");
+  return (
+    `${pad(date.getUTCDate())} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()} ` +
+    `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())} UTC`
+  );
 }
 
 /**
