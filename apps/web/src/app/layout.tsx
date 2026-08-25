@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { headers } from "next/headers";
 import { cookieToInitialState } from "wagmi";
 
@@ -9,18 +9,25 @@ import { ssrConfig } from "@/lib/wagmi-ssr";
 import "./globals.css";
 
 /**
- * Inter stands in for the brand face. It is self-hosted by `next/font`, which matters twice over:
- * the CSP allows `font-src 'self'` with no third-party origin, and there is no render-blocking
- * request to a font CDN on first paint.
+ * Inter stands in for the brand face, vendored rather than fetched.
  *
- * Only 400 and 500 are loaded. The design system never goes heavier, so shipping 600+ would be dead
- * weight in the payload and an invitation to break the rule.
+ * `next/font/google` self-hosts the result, which is what the CSP needs — but it downloads the files
+ * from fonts.googleapis.com *at build time*. That makes the build depend on Google being reachable,
+ * and a clean-room reproduction failed exactly there. Committing the two files it actually uses makes
+ * the build hermetic: it now works offline, in a sandboxed CI, and when Google has a bad minute.
+ *
+ * Only the latin subset of weights 400 and 500, because that is all the design system uses. Shipping
+ * 600+ would be dead weight and an invitation to break the weight ceiling. Inter is SIL OFL 1.1; the
+ * licence sits beside the files.
  */
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500"],
+const inter = localFont({
+  src: [
+    { path: "../fonts/Inter-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/Inter-500.woff2", weight: "500", style: "normal" },
+  ],
   variable: "--font-inter",
   display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
 });
 
 export const metadata: Metadata = {

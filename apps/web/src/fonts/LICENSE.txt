@@ -1,0 +1,7 @@
+Inter is licensed under the SIL Open Font License 1.1.
+
+Copyright (c) 2016-present The Inter Project Authors (https://github.com/rsms/inter)
+
+The files here are the latin subsets of weights 400 and 500, taken from Google Fonts and vendored so
+the build does not depend on fonts.googleapis.com being reachable. The full licence text is at
+https://openfontlicense.org and in the Inter repository.
