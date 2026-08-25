@@ -219,3 +219,36 @@ is visible.
 
 None of them make savings more private or the draw more fair. Each would add a surface to secure and
 a claim to defend. The build is one mechanism, done properly.
+
+---
+
+## No `/ops` admin page
+
+The PRD allows one. Serein does not ship one.
+
+The operational surface is prize funding, keeper status and draw progression. Funding is an owner
+action on `MockPrizeSource` and belongs in a script, not behind a web button. Progression is
+permissionless — the proof view already shows exactly where a draw is stuck, and any address can push
+it forward.
+
+That leaves a page whose only purpose is to look like an admin panel, on a product whose central
+claim is that no admin exists. The CLI keeper and the deployment scripts cover the real work.
+
+---
+
+## A CLI keeper, not a scheduled Worker
+
+The PRD prefers a Cloudflare scheduled Worker. Serein ships a Node CLI instead, and the reason is
+worth stating rather than glossing.
+
+Draw progression needs the Zama relayer SDK for public decryption. Its `node` build targets Node APIs
+and its `web` build expects a browser with WASM and worker support; neither is a configuration that
+`workerd` is known to run, and the PRD is explicit that this must be _tested_ rather than assumed.
+Shipping an untested scheduled Worker would mean a keeper that silently never runs — worse than no
+keeper, because it looks like one.
+
+What makes this acceptable is that the keeper is not load-bearing. Every progression function is
+permissionless, so a draw can be advanced from a CLI, from CI, or from a browser. If nobody runs one,
+draws are late; nothing is lost and nothing is locked.
+
+Running the SDK under `workerd` is a genuine open question, not a closed one. It is listed as such.
