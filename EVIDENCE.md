@@ -102,14 +102,30 @@ what you hold rather than reverting.
 
 ## 6. Draws are permissionless and resumable
 
-**Claim.** Any address can drive a draw; a keeper holds no privilege; an interrupted draw resumes.
+**Claim.** Any address can drive a draw; a keeper holds no privilege; an interrupted draw resumes
+from exactly where it stopped.
 
-|                |                                                                                                                                                                                         |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Code**       | Every progression function unauthenticated; cursor in storage                                                                                                                           |
-| **Tests**      | A complete draw driven by a signer that never touched the protocol; a draw interrupted mid-selection and finished by a **different** address; a failed batch leaving the cursor unmoved |
-| **Live**       | Every draw progressed by the keeper key, which holds no privilege and no funds beyond gas                                                                                               |
-| **Limitation** | Progression needs someone to pay gas. Absent a keeper, draws are late, not lost.                                                                                                        |
+Demonstrated live in draw #6, not only in tests. The keeper closed the draw, verified the aggregate,
+accepted a candidate, walked **two of six** participants and stopped. A different address — a
+participant wallet with no operational role — read the stored cursor and finished the remaining four.
+
+```
+cursor at interrupt : 2 / 6      (operator 0xbD74…c3f2)
+cursor at finish    : 6 / 6      (operator 0xedd9…4d3F)
+consistency verified: true
+```
+
+The consistency proof is what makes this meaningful. Had the second operator skipped a participant
+or re-walked one the first had already done, the encrypted prefix would not have matched the
+published aggregate and the draw could not have finalized.
+
+|                |                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Code**       | Every progression function unauthenticated; cursor in storage                                                 |
+| **Tests**      | A complete draw driven by a signer that never touched the protocol; a failed batch leaving the cursor unmoved |
+| **Live**       | [`evidence/live/recovery-draw-6.json`](evidence/live/recovery-draw-6.json)                                    |
+| **Reproduce**  | `hardhat run scripts/live-recovery.ts --network sepolia`                                                      |
+| **Limitation** | Progression needs someone to pay gas. Absent a keeper, draws are late, not lost.                              |
 
 ---
 

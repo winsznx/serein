@@ -67,17 +67,16 @@ deployed bytecode. `SereinPool` has no owner, no admin function, and no upgrade 
 
 ## Observed on live Sepolia
 
-|                                | Draw #1                 | Draw #2           | Draw #3           | Draw #4           | Draw #5             |
-| ------------------------------ | ----------------------- | ----------------- | ----------------- | ----------------- | ------------------- |
-| Registered participants        | 3 (none with weight)    | 3                 | 3                 | 3                 | **6**               |
-| Aggregate weight               | `0`                     | `243,000,000,000` | `360,000,000,000` | `360,000,000,000` | `1,105,500,000,000` |
-| Randomness bound               | —                       | `2^38`            | `2^39`            | `2^39`            | `2^41`              |
-| Acceptance probability         | —                       | 88.4%             | 65.5%             | 65.5%             | **50.3%**           |
-| Candidates drawn               | —                       | 1                 | 1                 | 1                 | **4 (3 rejected)**  |
-| Selection batches              | —                       | 1                 | 1                 | 1                 | **2**               |
-| Winner                         | none (zero-weight path) | participant-c     | participant-b     | participant-b     | participant-b       |
-| Principal conserved            | —                       | all 3             | all 3             | all 3             | **all 6**           |
-| Confidentiality probes refused | —                       | 4 of 4            | 4 of 4            | 4 of 4            | 4 of 4              |
+|                                | #1  | #2                | #3                | #4                | #5                  | #6                                |
+| ------------------------------ | --- | ----------------- | ----------------- | ----------------- | ------------------- | --------------------------------- |
+| Registered participants        | 3   | 3                 | 3                 | 3                 | **6**               | **6**                             |
+| Aggregate weight               | `0` | `243,000,000,000` | `360,000,000,000` | `360,000,000,000` | `1,105,500,000,000` | `8,218,500,000,000`               |
+| Randomness bound               | —   | `2^38`            | `2^39`            | `2^39`            | `2^41`              | `2^43`                            |
+| Acceptance probability         | —   | 88.4%             | 65.5%             | 65.5%             | **50.3%**           | 93.5%                             |
+| Candidates drawn               | —   | 1                 | 1                 | 1                 | **4 (3 rejected)**  | 1                                 |
+| Selection batches              | —   | 1                 | 1                 | 1                 | **2**               | **2, by two different addresses** |
+| Principal conserved            | —   | all 3             | all 3             | all 3             | **all 6**           | all 6                             |
+| Confidentiality probes refused | —   | 4/4               | 4/4               | 4/4               | 4/4                 | 4/4                               |
 
 Every non-zero aggregate matches the value derived from the public deposit timestamps, to the unit.
 `scripts/verify-aggregate.ts` recomputes any draw's total from the observation series and compares.
@@ -88,6 +87,13 @@ closed, so the protocol verified the aggregate as zero and finalized with no win
 **Draw #4** demonstrates the frozen-weight invariant. Participant A had withdrawn everything and held
 zero principal when results were claimed, yet was a full participant with 25% odds — their withdrawal
 landed after the epoch closed. A later withdrawal cannot reduce an entry already earned.
+
+**Draw #6** is the recovery drill. The keeper closed the draw, verified the aggregate, accepted a
+candidate, walked two of six participants — and stopped. A **different address**, a participant
+wallet holding no operational role, read the stored cursor and finished the remaining four. The
+consistency proof still verified, which it could not have done had anyone been skipped or walked
+twice. That is the liveness claim demonstrated rather than asserted: the keeper really is not
+special.
 
 **Draw #5** is the strongest artifact. Its total landed just above `2^40`, so the bound was `2^41` and
 acceptance was **50.3%** — the theoretical worst case for rejection sampling, which produced three
