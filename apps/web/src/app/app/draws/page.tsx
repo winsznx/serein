@@ -92,9 +92,7 @@ export default function DrawsPage() {
                       ends in <DrawCountdown endTimestamp={draw.endTimestamp} />
                     </p>
                   ) : (
-                    <p className="text-small text-white/50">
-                      {formatTimestamp(draw.endTimestamp)}
-                    </p>
+                    <p className="text-small text-white/50">{formatTimestamp(draw.endTimestamp)}</p>
                   )}
                 </div>
 

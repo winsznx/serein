@@ -72,9 +72,9 @@ export default function SecurityPage() {
       <DocSection title="Why encrypted arithmetic needs bounds">
         <P>
           Encrypted addition does not revert on overflow. If a sum exceeds the type&apos;s range it
-          wraps silently and produces a ciphertext indistinguishable from a correct one — there is no
-          exception to catch and nothing downstream to notice. Correctness has to come from a bound
-          proved before the operation, never from a check after it.
+          wraps silently and produces a ciphertext indistinguishable from a correct one — there is
+          no exception to catch and nothing downstream to notice. Correctness has to come from a
+          bound proved before the operation, never from a check after it.
         </P>
         <P>
           Serein caps total principal at a value low enough that every subsequent quantity — each
@@ -91,9 +91,9 @@ export default function SecurityPage() {
           Three points in a draw depend on a value only Zama&apos;s key management service can
           produce. At each, an untrusted caller submits a cleartext together with a KMS signature,
           and the contract verifies that the KMS signed that exact value for that exact ciphertext
-          handle. A made-up number fails. A real number taken from a different draw fails, because it
-          was signed against a different handle. Resubmitting an accepted proof fails on the state
-          machine, which only moves forward.
+          handle. A made-up number fails. A real number taken from a different draw fails, because
+          it was signed against a different handle. Resubmitting an accepted proof fails on the
+          state machine, which only moves forward.
         </P>
       </DocSection>
 
@@ -101,8 +101,8 @@ export default function SecurityPage() {
         <P>
           Every step of a draw is callable by anyone. If the keeper stops, draws stop being punctual
           and nothing else happens: savers keep depositing, keep withdrawing, and anyone can finish
-          an in-flight draw. A failed batch leaves the cursor exactly where it was, so retrying never
-          double-processes a participant.
+          an in-flight draw. A failed batch leaves the cursor exactly where it was, so retrying
+          never double-processes a participant.
         </P>
         <Note>
           Withdrawals have no dependency on draw state at all. Principal comes out while a draw is
@@ -122,9 +122,9 @@ export default function SecurityPage() {
           mock and does not display an APY it cannot measure.
         </P>
         <P>
-          Storage grows with participants and with balance changes, and the selection walk grows with
-          the participant count. The measured costs and where they stop being comfortable are in the
-          benchmarks rather than glossed as &quot;scales&quot;.
+          Storage grows with participants and with balance changes, and the selection walk grows
+          with the participant count. The measured costs and where they stop being comfortable are
+          in the benchmarks rather than glossed as &quot;scales&quot;.
         </P>
         <div className="pt-2">
           <ButtonLink href="/proof" tone="dark">

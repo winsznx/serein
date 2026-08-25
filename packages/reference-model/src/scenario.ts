@@ -328,7 +328,11 @@ export function generateScenario(options: GenerateOptions): Scenario {
       participantCount = prng.nextInt(1, 25);
       for (let i = 0; i < participantCount; i++) {
         if (prng.nextInt(0, 9) === 0) continue; // some addresses register with nothing
-        deposit(i, epochStart + prng.nextRange(0n, epochSeconds), prng.nextRange(1n, 10_000n) * UNIT);
+        deposit(
+          i,
+          epochStart + prng.nextRange(0n, epochSeconds),
+          prng.nextRange(1n, 10_000n) * UNIT,
+        );
       }
       const extra = prng.nextInt(0, 12);
       const stamps: bigint[] = [];

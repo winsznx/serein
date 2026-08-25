@@ -4,11 +4,11 @@ From a fresh clone to a running app, then to your own deployment.
 
 ## Prerequisites
 
-| Tool | Version | Notes |
-|---|---|---|
+| Tool    | Version | Notes                     |
+| ------- | ------- | ------------------------- |
 | Node.js | ≥ 20.18 | 24.x used for development |
-| pnpm | ≥ 10 | `corepack enable` |
-| Git | any | |
+| pnpm    | ≥ 10    | `corepack enable`         |
+| Git     | any     |                           |
 
 Nothing else. No Docker, no global installs, no database.
 
@@ -172,17 +172,17 @@ scripts/                   Wallet generation, clean-room reproduction
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `pnpm check` | Format, lint, typecheck, compile, fast tests |
-| `pnpm test` | Reference model + FHE mock suite |
-| `pnpm test:e2e` | Playwright browser tests |
-| `pnpm benchmark` | Measure HCU |
-| `pnpm proof:local` | Scenario corpus + fairness campaign |
-| `pnpm deploy:sepolia` | Deploy contracts |
-| `pnpm proof:sepolia` | Live campaign |
-| `pnpm web:dev` / `web:preview` / `web:deploy` | App |
-| `pnpm cleanroom` | Full reproduction from a clean checkout |
+| Command                                       | What it does                                 |
+| --------------------------------------------- | -------------------------------------------- |
+| `pnpm check`                                  | Format, lint, typecheck, compile, fast tests |
+| `pnpm test`                                   | Reference model + FHE mock suite             |
+| `pnpm test:e2e`                               | Playwright browser tests                     |
+| `pnpm benchmark`                              | Measure HCU                                  |
+| `pnpm proof:local`                            | Scenario corpus + fairness campaign          |
+| `pnpm deploy:sepolia`                         | Deploy contracts                             |
+| `pnpm proof:sepolia`                          | Live campaign                                |
+| `pnpm web:dev` / `web:preview` / `web:deploy` | App                                          |
+| `pnpm cleanroom`                              | Full reproduction from a clean checkout      |
 
 ## Troubleshooting
 

@@ -157,9 +157,7 @@ describe("Serein — HCU benchmarks", function () {
     await acceptRandomCandidate(stack, drawId);
 
     // One batch at the cap — the measurement that justifies MAX_SELECTION_BATCH.
-    const batchReceipt = (await (
-      await stack.pool.processSelectionBatch(drawId, cap)
-    ).wait())!;
+    const batchReceipt = (await (await stack.pool.processSelectionBatch(drawId, cap)).wait())!;
     const batch = measure("processSelectionBatch (at MAX_SELECTION_BATCH)", batchReceipt, {
       participants: cap,
       batchSize: cap,
@@ -171,9 +169,7 @@ describe("Serein — HCU benchmarks", function () {
     // The point of the cap: a full batch has to clear both ceilings with room to spare, because a
     // batch that reverts on HCU would stall the draw until someone retried with a smaller one.
     expect(batch.globalHCU, "full batch global HCU").to.be.lessThan(HCU_GLOBAL_LIMIT);
-    expect(batch.sequentialHCU, "full batch sequential HCU").to.be.lessThan(
-      HCU_SEQUENTIAL_LIMIT,
-    );
+    expect(batch.sequentialHCU, "full batch sequential HCU").to.be.lessThan(HCU_SEQUENTIAL_LIMIT);
     expect(batch.globalHeadroomPercent, "global headroom").to.be.greaterThan(10);
 
     // eslint-disable-next-line no-console
@@ -252,9 +248,7 @@ describe("Serein — HCU benchmarks", function () {
       await verifyTotal(stack, drawId);
       await acceptRandomCandidate(stack, drawId);
 
-      const receipt = (await (
-        await stack.pool.processSelectionBatch(drawId, batchSize)
-      ).wait())!;
+      const receipt = (await (await stack.pool.processSelectionBatch(drawId, batchSize)).wait())!;
       measurements.push(
         measure(`processSelectionBatch (batch of ${batchSize})`, receipt, {
           participants: batchSize,
@@ -263,7 +257,9 @@ describe("Serein — HCU benchmarks", function () {
       );
     }
 
-    const batches = measurements.filter((m) => m.batchSize !== undefined && m.participants !== undefined);
+    const batches = measurements.filter(
+      (m) => m.batchSize !== undefined && m.participants !== undefined,
+    );
     expect(batches.length).to.be.greaterThan(1);
   });
 });

@@ -67,7 +67,9 @@ function buildCsp(nonce: string): string {
   };
 
   return Object.entries(directives)
-    .map(([directive, values]) => (values.length > 0 ? `${directive} ${values.join(" ")}` : directive))
+    .map(([directive, values]) =>
+      values.length > 0 ? `${directive} ${values.join(" ")}` : directive,
+    )
     .join("; ");
 }
 

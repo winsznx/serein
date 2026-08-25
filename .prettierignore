@@ -10,3 +10,7 @@ apps/web/public/
 evidence/raw/
 evidence/benchmarks/
 deployments/
+*.sol
+PRD.md
+DESIGN.md
+packages/contracts/fhevmTemp/

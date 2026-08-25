@@ -97,13 +97,10 @@ async function main(): Promise<void> {
   const handle = await pool.confidentialBalanceOf(alice.address);
   console.log(`   handle  ${handle}`);
   const decryptStarted = Date.now();
-  const revealed = await fhevm.userDecryptEuint(
-    FhevmType.euint64,
-    handle,
-    poolAddress,
-    alice,
+  const revealed = await fhevm.userDecryptEuint(FhevmType.euint64, handle, poolAddress, alice);
+  console.log(
+    `   value   ${ethers.formatUnits(revealed, 6)} ptUSDC (${Date.now() - decryptStarted}ms)`,
   );
-  console.log(`   value   ${ethers.formatUnits(revealed, 6)} ptUSDC (${Date.now() - decryptStarted}ms)`);
 
   if (revealed !== amount) {
     throw new Error(`decrypted ${revealed}, expected ${amount}`);

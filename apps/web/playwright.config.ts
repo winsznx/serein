@@ -26,9 +26,15 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 900 } } },
+    {
+      name: "desktop",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 900 } },
+    },
     { name: "mobile", use: { ...devices["iPhone 13"] } },
-    { name: "narrow", use: { ...devices["Desktop Chrome"], viewport: { width: 320, height: 640 } } },
+    {
+      name: "narrow",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 320, height: 640 } },
+    },
   ],
   ...(process.env.SEREIN_E2E_BASE_URL
     ? {}

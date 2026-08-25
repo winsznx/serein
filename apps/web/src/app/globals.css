@@ -39,8 +39,8 @@
   --color-pewter: #8f8e8e;
   --color-ash: #bcbbbb;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    sans-serif;
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
 
   /* Type scale. Tracking tightens as size grows — that is the whole hierarchy mechanism. */
@@ -180,13 +180,12 @@
 
   /* The lavender hero wash. Marketing only — never behind the product. */
   .hero-wash {
-    background:
-      radial-gradient(
-        120% 90% at 50% 0%,
-        var(--color-violet-wash) 0%,
-        color-mix(in srgb, var(--color-violet-wash) 45%, var(--color-paper)) 42%,
-        var(--color-paper) 78%
-      );
+    background: radial-gradient(
+      120% 90% at 50% 0%,
+      var(--color-violet-wash) 0%,
+      color-mix(in srgb, var(--color-violet-wash) 45%, var(--color-paper)) 42%,
+      var(--color-paper) 78%
+    );
   }
 }
 

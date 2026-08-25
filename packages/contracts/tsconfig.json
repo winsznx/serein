@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2023"
-    ],
+    "lib": ["ES2023"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -12,12 +10,7 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [
-      "node",
-      "mocha",
-      "chai",
-      "chai-as-promised"
-    ],
+    "types": ["node", "mocha", "chai", "chai-as-promised"],
     "noEmit": true
   },
   "include": [

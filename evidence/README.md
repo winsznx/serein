@@ -20,13 +20,13 @@ evidence/
 
 ## Regenerating
 
-| Artifact | Command | Needs a network? |
-|---|---|---|
-| `raw/scenario-corpus.json`, `benchmarks/statistical-fairness.json` | `pnpm proof:local` | No |
-| `benchmarks/hcu.json` | `pnpm benchmark` | No — Hardhat mock coprocessor |
-| `deployments/*` | `pnpm deploy:sepolia` | Yes, and a funded deployer |
-| `live/draws/*` | `pnpm proof:sepolia` | Yes |
-| `live/withdrawal.json` | `hardhat run scripts/live-withdraw.ts --network sepolia` | Yes |
+| Artifact                                                           | Command                                                  | Needs a network?              |
+| ------------------------------------------------------------------ | -------------------------------------------------------- | ----------------------------- |
+| `raw/scenario-corpus.json`, `benchmarks/statistical-fairness.json` | `pnpm proof:local`                                       | No                            |
+| `benchmarks/hcu.json`                                              | `pnpm benchmark`                                         | No — Hardhat mock coprocessor |
+| `deployments/*`                                                    | `pnpm deploy:sepolia`                                    | Yes, and a funded deployer    |
+| `live/draws/*`                                                     | `pnpm proof:sepolia`                                     | Yes                           |
+| `live/withdrawal.json`                                             | `hardhat run scripts/live-withdraw.ts --network sepolia` | Yes                           |
 
 The offline artifacts reproduce byte-identically: the scenario corpus is seeded, and the HCU numbers
 come from a deterministic meter.

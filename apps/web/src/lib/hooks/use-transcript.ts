@@ -34,7 +34,9 @@ const EVENTS = [
   parseAbiItem(
     "event DrawFinalized(uint256 indexed drawId, bool consistencyVerified, bool hasWinner)",
   ),
-  parseAbiItem("event DrawOpened(uint256 indexed drawId, uint64 startTimestamp, uint64 endTimestamp)"),
+  parseAbiItem(
+    "event DrawOpened(uint256 indexed drawId, uint64 startTimestamp, uint64 endTimestamp)",
+  ),
 ] as const;
 
 export interface TranscriptEntry {

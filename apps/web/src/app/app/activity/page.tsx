@@ -27,12 +27,16 @@ const EVENTS = [
     detail: "Amount encrypted",
   },
   {
-    item: parseAbiItem("event SavingsWithdrawn(address indexed participant, uint256 indexed drawId)"),
+    item: parseAbiItem(
+      "event SavingsWithdrawn(address indexed participant, uint256 indexed drawId)",
+    ),
     label: "Took out savings",
     detail: "Amount encrypted",
   },
   {
-    item: parseAbiItem("event ParticipantRegistered(address indexed participant, uint256 indexed index)"),
+    item: parseAbiItem(
+      "event ParticipantRegistered(address indexed participant, uint256 indexed index)",
+    ),
     label: "Registered as a saver",
     detail: "Public",
   },
@@ -114,7 +118,9 @@ export default function ActivityPage() {
   });
 
   if (!state.ready) {
-    return <p className="py-12 text-center text-body text-white/60">No deployment on this chain.</p>;
+    return (
+      <p className="py-12 text-center text-body text-white/60">No deployment on this chain.</p>
+    );
   }
 
   if (!isConnected || !address) {
@@ -156,7 +162,9 @@ export default function ActivityPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-small font-medium">{row.label}</p>
-                    <p className="mt-0.5 text-caption text-white/45">block {row.blockNumber.toString()}</p>
+                    <p className="mt-0.5 text-caption text-white/45">
+                      block {row.blockNumber.toString()}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     {row.encrypted ? (

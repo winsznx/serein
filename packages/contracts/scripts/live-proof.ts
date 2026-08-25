@@ -8,7 +8,13 @@ import { ethers, fhevm } from "hardhat";
 import { advanceDraw, closeIfDue, DRAW_STATUS_NAMES, type StepLog } from "./lib/draw-runner";
 import { addressOf, loadManifest } from "./lib/manifest";
 import { isTransientRelayerError, withRelayerRetry } from "./lib/relayer";
-import type { ConfidentialUSDC, MockPrizeSource, SereinPool, SereinPrizeReserve, TestUSDC } from "../types";
+import type {
+  ConfidentialUSDC,
+  MockPrizeSource,
+  SereinPool,
+  SereinPrizeReserve,
+  TestUSDC,
+} from "../types";
 
 /**
  * The live Sepolia proof campaign.
@@ -174,8 +180,7 @@ async function main(): Promise<void> {
       console.log(`   ${role} wrap     ${wrapTx.hash}`);
 
       const input = await withRelayerRetry(
-        () =>
-          fhevm.createEncryptedInput(tokenAddress, signer.address).add64(amount).encrypt(),
+        () => fhevm.createEncryptedInput(tokenAddress, signer.address).add64(amount).encrypt(),
         { label: `encrypt deposit for ${role}`, log: (m) => console.log(m) },
       );
 
@@ -227,8 +232,7 @@ async function main(): Promise<void> {
     console.log(`   deposit  ${depositTx.hash}  (public: ${prizeUnderlying / UNIT} tUSDC wrapped)`);
 
     const prizeInput = await withRelayerRetry(
-      () =>
-        fhevm.createEncryptedInput(sourceAddress, deployer.address).add64(allocation).encrypt(),
+      () => fhevm.createEncryptedInput(sourceAddress, deployer.address).add64(allocation).encrypt(),
       { label: "encrypt prize allocation", log: (m) => console.log(m) },
     );
     const fundTx = await source
@@ -442,11 +446,7 @@ async function main(): Promise<void> {
   );
   evidence.finishedAt = new Date().toISOString();
 
-  const target = resolve(
-    __dirname,
-    "../../..",
-    `evidence/live/draws/draw-${drawId}.json`,
-  );
+  const target = resolve(__dirname, "../../..", `evidence/live/draws/draw-${drawId}.json`);
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, `${JSON.stringify(evidence, null, 2)}\n`);
 
@@ -479,7 +479,8 @@ async function expectRefused(
           `This is a protocol break, not a test failure.`,
       );
     } catch (error) {
-      if (error instanceof Error && error.message.startsWith("CONFIDENTIALITY FAILURE")) throw error;
+      if (error instanceof Error && error.message.startsWith("CONFIDENTIALITY FAILURE"))
+        throw error;
 
       if (isTransientRelayerError(error)) {
         if (tries === maxTransientRetries) {
@@ -491,7 +492,9 @@ async function expectRefused(
           );
         }
         const delay = 2_000 * 2 ** tries;
-        console.log(`   ...     transport error while testing "${claim}", retrying in ${delay / 1000}s`);
+        console.log(
+          `   ...     transport error while testing "${claim}", retrying in ${delay / 1000}s`,
+        );
         await new Promise((done) => setTimeout(done, delay));
         continue;
       }

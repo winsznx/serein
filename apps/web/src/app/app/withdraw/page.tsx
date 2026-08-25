@@ -213,9 +213,10 @@ export default function WithdrawPage() {
             A draw is in progress — this does not block you
           </h2>
           <p className="mt-1.5 text-small text-white/70">
-            Draw #{pool.currentDrawId.toString()} is {DRAW_STATUS[pool.draw.status].consumer.toLowerCase()}.
-            Its weights were frozen when it closed, so taking savings out now neither reduces nor
-            increases the entry you already have in it. Withdrawals stay open at every stage.
+            Draw #{pool.currentDrawId.toString()} is{" "}
+            {DRAW_STATUS[pool.draw.status].consumer.toLowerCase()}. Its weights were frozen when it
+            closed, so taking savings out now neither reduces nor increases the entry you already
+            have in it. Withdrawals stay open at every stage.
           </p>
         </Card>
       ) : null}

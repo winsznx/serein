@@ -92,8 +92,7 @@ function buildScenarioCorpus(): void {
       finalPrefix: result.selection.finalPrefix,
       prize: result.scenario.prize,
       prizeCredits: result.prizeCredits,
-      weightsUnchangedAfterPostClose:
-        json(result.weights) === json(result.weightsAfterPostClose),
+      weightsUnchangedAfterPostClose: json(result.weights) === json(result.weightsAfterPostClose),
     };
   });
 

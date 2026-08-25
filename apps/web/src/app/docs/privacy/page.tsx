@@ -29,9 +29,15 @@ export default function PrivacyPage() {
             <caption className="sr-only">Serein information disclosure ledger</caption>
             <thead>
               <tr className="border-b border-ash/50 bg-bone text-caption text-iron">
-                <th scope="col" className="px-4 py-3 font-medium">Information</th>
-                <th scope="col" className="px-4 py-3 font-medium">Disclosure</th>
-                <th scope="col" className="px-4 py-3 font-medium">Why</th>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  Information
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  Disclosure
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  Why
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -64,10 +70,11 @@ export default function PrivacyPage() {
           selection needs it, and the alternative is an approximate draw.
         </P>
         <Note>
-          A sum only hides the parts when there are enough of them. With a single saver, the total is
-          that saver&apos;s weight. With two, either can subtract their own to learn the other&apos;s.
-          With a handful, it narrows everyone&apos;s range. The app shows a warning whenever the pool
-          is small enough for this to bite, and it does not describe a two-person pool as private.
+          A sum only hides the parts when there are enough of them. With a single saver, the total
+          is that saver&apos;s weight. With two, either can subtract their own to learn the
+          other&apos;s. With a handful, it narrows everyone&apos;s range. The app shows a warning
+          whenever the pool is small enough for this to bite, and it does not describe a two-person
+          pool as private.
         </Note>
       </DocSection>
 
@@ -88,13 +95,13 @@ export default function PrivacyPage() {
       <DocSection title="What the app itself never does">
         <P>
           When you reveal a value, the plaintext exists only in your browser tab, in memory. It is
-          not written to local storage, not put in a cookie, not sent to any server, and not included
-          in any error report. Switching wallet or network clears it immediately, so a balance can
-          never appear attributed to an account it does not belong to.
+          not written to local storage, not put in a cookie, not sent to any server, and not
+          included in any error report. Switching wallet or network clears it immediately, so a
+          balance can never appear attributed to an account it does not belong to.
         </P>
         <P>
-          There is no analytics SDK, no third-party script, and no telemetry on financial values. The
-          only network calls the app makes are to the chain, to the Zama relayer, and to its own
+          There is no analytics SDK, no third-party script, and no telemetry on financial values.
+          The only network calls the app makes are to the chain, to the Zama relayer, and to its own
           read-only RPC proxy.
         </P>
       </DocSection>
@@ -108,8 +115,8 @@ export default function PrivacyPage() {
           be public and ordered for the draw walk to be verifiable at all.
         </P>
         <P>
-          None of that is a bug. It is the cost of running on a public chain, and it is better stated
-          than discovered.
+          None of that is a bug. It is the cost of running on a public chain, and it is better
+          stated than discovered.
         </P>
       </DocSection>
     </>

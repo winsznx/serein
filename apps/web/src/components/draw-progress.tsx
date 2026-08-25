@@ -62,8 +62,8 @@ export function DrawProgress({ draw, compact }: { draw: DrawView; compact?: bool
       {draw.randomAttempts > 1 ? (
         <p className="text-caption text-white/50">
           {draw.randomAttempts} random candidates drawn — earlier ones landed outside the usable
-          range and were discarded. This is the rejection step working as designed, not a retry after
-          a failure.
+          range and were discarded. This is the rejection step working as designed, not a retry
+          after a failure.
         </p>
       ) : null}
     </div>

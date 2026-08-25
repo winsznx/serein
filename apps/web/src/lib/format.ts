@@ -3,7 +3,10 @@ export const TOKEN_DECIMALS = 6;
 export const TOKEN_SYMBOL = "tUSDC";
 export const PRIVATE_TOKEN_SYMBOL = "ptUSDC";
 
-export function formatTokenAmount(raw: bigint, options: { maximumFractionDigits?: number } = {}): string {
+export function formatTokenAmount(
+  raw: bigint,
+  options: { maximumFractionDigits?: number } = {},
+): string {
   const negative = raw < 0n;
   const value = negative ? -raw : raw;
   const base = 10n ** BigInt(TOKEN_DECIMALS);

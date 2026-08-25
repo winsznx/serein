@@ -164,9 +164,9 @@ function WrapStep({ wallet, address }: { wallet: Wallet; address: `0x${string}` 
     >
       <div className="rounded-card border border-violet/30 bg-violet/[0.07] p-4">
         <p className="text-small text-white/80">
-          Be aware: this transaction is public. Anyone reading the chain can see the amount you wrap.
-          What stays private is everything that happens afterwards — your savings balance, your draw
-          weight, your odds, and your results.
+          Be aware: this transaction is public. Anyone reading the chain can see the amount you
+          wrap. What stays private is everything that happens afterwards — your savings balance,
+          your draw weight, your odds, and your results.
         </p>
       </div>
 
@@ -183,7 +183,9 @@ function WrapStep({ wallet, address }: { wallet: Wallet; address: `0x${string}` 
           />
           <Button
             tone="ghost-dark"
-            onClick={() => setAmount(formatTokenAmount(wallet.underlyingBalance, { maximumFractionDigits: 6 }))}
+            onClick={() =>
+              setAmount(formatTokenAmount(wallet.underlyingBalance, { maximumFractionDigits: 6 }))
+            }
           >
             Max
           </Button>
@@ -247,9 +249,10 @@ function SaveStep({ wallet, address }: { wallet: Wallet; address: `0x${string}` 
   const { writeContractAsync } = useWriteContract();
   const flow = useTxFlow();
   const [amount, setAmount] = useState("");
-  const [encrypted, setEncrypted] = useState<{ handle: `0x${string}`; proof: `0x${string}` } | null>(
-    null,
-  );
+  const [encrypted, setEncrypted] = useState<{
+    handle: `0x${string}`;
+    proof: `0x${string}`;
+  } | null>(null);
   const addresses = deployment().addresses!;
 
   const parsed = parseTokenAmount(amount);
@@ -333,9 +336,7 @@ function SaveStep({ wallet, address }: { wallet: Wallet; address: `0x${string}` 
         {encrypted ? (
           <Badge tone="violet">◆ Encrypted locally</Badge>
         ) : (
-          <p className="text-caption text-white/45">
-            Encryption happens before your wallet opens.
-          </p>
+          <p className="text-caption text-white/45">Encryption happens before your wallet opens.</p>
         )}
       </div>
 

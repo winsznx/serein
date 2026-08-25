@@ -13,7 +13,7 @@ Weight is the integral of balance over the epoch instead.
 **Cost.** Every balance change appends an observation to two series, and computing a weight needs two
 lookups with a `euint128` scalar multiply each. That is most of the per-participant HCU.
 
-**Bonus.** Reading two *frozen historical* points is exactly what makes withdrawal-during-a-draw safe,
+**Bonus.** Reading two _frozen historical_ points is exactly what makes withdrawal-during-a-draw safe,
 so the expensive choice is also the one that delivers the liveness property.
 
 ---
@@ -53,7 +53,7 @@ wrap when the winner is found so no later participant can match. It saves roughl
 selection cost.
 
 **Rejected.** It depends on `FHE.sub` wrapping rather than saturating. If that semantic ever changed,
-the failure mode would be *multiple winners* — silently, with no revert. Trading a guarantee about
+the failure mode would be _multiple winners_ — silently, with no revert. Trading a guarantee about
 "exactly one winner" for 25% of one line item is not a good trade. The prefix formulation is also
 what the consistency check `P == T` is written against, so it stays directly auditable.
 
@@ -72,7 +72,7 @@ winner predicate.
 
 ## The winner predicate materialises a credit, rather than accumulating winnings
 
-**Why.** Storing a per-draw credit lets a saver reveal *this draw's* result — "you won 120" or "no
+**Why.** Storing a per-draw credit lets a saver reveal _this draw's_ result — "you won 120" or "no
 prize this draw" — which is what the product needs to say. A single running `winnings[user]` would be
 cheaper in storage but could not answer that question.
 
@@ -83,7 +83,7 @@ cheaper in storage but could not answer that question.
 ## Append-only observations, not a ring buffer
 
 **Why.** PoolTogether overwrites within a period. Doing that correctly needs a period-alignment
-argument holding against every draw boundary, and getting it subtly wrong corrupts weights *silently*
+argument holding against every draw boundary, and getting it subtly wrong corrupts weights _silently_
 rather than reverting. On a first deployment, a correctness bug you cannot see is worse than a storage
 bill you can.
 
@@ -98,12 +98,11 @@ here, and not claimed to be.
 
 ## `MAX_SELECTION_BATCH = 8`, keeper default 5
 
-Measured: 1,993,721 HCU per participant warm, 2,963,378 cold. Against the 20M ceiling that is 10 and
-6.
+Measured: 1,993,721 HCU per participant warm, 2,963,378 cold. Against the 20M ceiling that is 10 and 6.
 
 **Why 8 as the ceiling and 5 as the default.** 8 fits the common path with 20% headroom. 6 is what
 fits unconditionally. The keeper sits below both and halves on failure, because a batch that reverts
-on HCU costs only gas — the cursor does not move. There is also a per-*block* HCU cap, so a batch
+on HCU costs only gas — the cursor does not move. There is also a per-_block_ HCU cap, so a batch
 sized correctly in isolation can still fail because of someone else's transaction; the retry handles
 that too.
 
@@ -111,7 +110,7 @@ that too.
 
 ## `@fhevm/solidity` 0.11.1, not 0.13.3
 
-0.13.3 is newer. But `@openzeppelin/confidential-contracts@0.5.3` pins `0.11.1` *exactly*, and
+0.13.3 is newer. But `@openzeppelin/confidential-contracts@0.5.3` pins `0.11.1` _exactly_, and
 `@fhevm/hardhat-plugin@0.4.2` requires `^0.11.1`. Taking 0.13.3 would mean abandoning either the
 audited ERC-7984 implementation or the testing toolchain.
 
@@ -119,8 +118,8 @@ Checked before committing: Sepolia's ACL, Coprocessor and KMSVerifier addresses 
 across both versions, and `randEuint128(bound)`, `makePubliclyDecryptable` and `checkSignatures` are
 present and identical in 0.11.1. Nothing was lost.
 
-*(`SepoliaConfig` no longer exists in either — it was removed in v0.9. The config contract is
-`ZamaEthereumConfig`. Worth knowing, since most guides still say otherwise.)*
+_(`SepoliaConfig` no longer exists in either — it was removed in v0.9. The config contract is
+`ZamaEthereumConfig`. Worth knowing, since most guides still say otherwise.)_
 
 ---
 
@@ -185,7 +184,7 @@ Etherscan needs an API key. Source verification should never be blocked on a cre
 not have. Sourcify needs none and produces `exact_match`, a stronger claim than Etherscan's — the
 published source compiles to precisely the deployed bytecode. Etherscan runs too when a key is set.
 
-*(The `hardhat-verify` Sourcify task is broken against the current API; see CONTRIBUTIONS.md.)*
+_(The `hardhat-verify` Sourcify task is broken against the current API; see CONTRIBUTIONS.md.)_
 
 ---
 

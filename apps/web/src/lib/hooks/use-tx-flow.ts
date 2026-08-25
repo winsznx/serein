@@ -207,5 +207,7 @@ function isRejection(error: unknown): boolean {
   const candidate = error as { code?: number | string; name?: string; message?: string };
   if (candidate.code === 4001 || candidate.code === "ACTION_REJECTED") return true;
   if (candidate.name === "UserRejectedRequestError") return true;
-  return typeof candidate.message === "string" && /user rejected|user denied/i.test(candidate.message);
+  return (
+    typeof candidate.message === "string" && /user rejected|user denied/i.test(candidate.message)
+  );
 }

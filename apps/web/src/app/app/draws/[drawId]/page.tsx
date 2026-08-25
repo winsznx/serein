@@ -10,7 +10,12 @@ import { TxStatus } from "@/components/tx-status";
 import { Button, ButtonLink, Card, DataRow, StatusPill } from "@/components/ui";
 import { deployment } from "@/lib/chain";
 import { revealValue } from "@/lib/fhe/reveal";
-import { formatTimestamp, formatWeight, PRIVATE_TOKEN_SYMBOL, formatTokenAmount } from "@/lib/format";
+import {
+  formatTimestamp,
+  formatWeight,
+  PRIVATE_TOKEN_SYMBOL,
+  formatTokenAmount,
+} from "@/lib/format";
 import { ABIS, useDeployment, useDraw, useDrawResult } from "@/lib/hooks/use-serein";
 import { useTxFlow } from "@/lib/hooks/use-tx-flow";
 import { DrawStatus } from "@serein/protocol-sdk";
@@ -38,13 +43,17 @@ export default function DrawDetailPage({ params }: { params: Promise<{ drawId: s
   const [revealState, reveal] = useRevealState();
 
   if (!state.ready) {
-    return <p className="py-12 text-center text-body text-white/60">No deployment on this chain.</p>;
+    return (
+      <p className="py-12 text-center text-body text-white/60">No deployment on this chain.</p>
+    );
   }
   if (parsed === null) {
     return <p className="py-12 text-center text-body text-white/60">That is not a draw number.</p>;
   }
   if (isLoading) {
-    return <p className="py-12 text-center text-body text-white/60">Loading draw #{drawIdParam}…</p>;
+    return (
+      <p className="py-12 text-center text-body text-white/60">Loading draw #{drawIdParam}…</p>
+    );
   }
   if (!draw || draw.status === DrawStatus.None) {
     return (

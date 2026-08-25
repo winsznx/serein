@@ -64,7 +64,9 @@ export function PrivateValue({
     <div className="space-y-3">
       <p className={cn("ciphertext font-medium", sizes[size])} aria-describedby={describedBy}>
         <span aria-hidden="true">{CIPHERTEXT_MASK}</span>
-        <span className="sr-only">{label} is encrypted. Choose reveal to decrypt it privately.</span>
+        <span className="sr-only">
+          {label} is encrypted. Choose reveal to decrypt it privately.
+        </span>
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -101,7 +103,11 @@ export function PrivateInline({ label }: { label: string }) {
 }
 
 /** Hook that manages a single reveal's lifecycle, including the "you declined" case. */
-export function useRevealState(): [RevealState, (run: () => Promise<bigint>) => Promise<void>, () => void] {
+export function useRevealState(): [
+  RevealState,
+  (run: () => Promise<bigint>) => Promise<void>,
+  () => void,
+] {
   const [state, setState] = useState<RevealState>({ status: "hidden" });
 
   const reveal = async (run: () => Promise<bigint>): Promise<void> => {

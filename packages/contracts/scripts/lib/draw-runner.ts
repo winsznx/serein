@@ -109,7 +109,9 @@ export async function closeIfDue(
     return null;
   }
 
-  await send(ctx, "closeDraw", () => pool.connect(signer).closeDraw(), { drawId: drawId.toString() });
+  await send(ctx, "closeDraw", () => pool.connect(signer).closeDraw(), {
+    drawId: drawId.toString(),
+  });
   return drawId;
 }
 
@@ -152,7 +154,9 @@ export async function advanceDraw(
 
     if (status === DrawStatus.AwaitingRandomCandidate) {
       if (rejections > ctx.maxRejections) {
-        throw new Error(`draw ${drawId}: rejection sampling exceeded ${ctx.maxRejections} attempts`);
+        throw new Error(
+          `draw ${drawId}: rejection sampling exceeded ${ctx.maxRejections} attempts`,
+        );
       }
       await send(
         ctx,

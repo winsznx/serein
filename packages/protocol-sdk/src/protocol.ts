@@ -276,7 +276,8 @@ export const LEAKAGE_LEDGER: readonly LeakageRow[] = [
   {
     item: "That an address called claim or withdraw",
     disclosure: "public",
-    rationale: "Transaction metadata. The amounts moved are encrypted; the fact of the call is not.",
+    rationale:
+      "Transaction metadata. The amounts moved are encrypted; the fact of the call is not.",
   },
   {
     item: "Amounts wrapped into or out of the confidential token",

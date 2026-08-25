@@ -83,7 +83,8 @@ export async function runScript(
   for (const action of ordered) {
     // Build the encrypted input first. Pinning the timestamp only holds for the next block, so any
     // work that might mine one has to happen before the pin, not after it.
-    const target = action.kind === "deposit" ? stack.addresses.confidentialUSDC : stack.addresses.pool;
+    const target =
+      action.kind === "deposit" ? stack.addresses.confidentialUSDC : stack.addresses.pool;
     const input = await fhevm
       .createEncryptedInput(target, action.signer.address)
       .add64(action.amount)

@@ -74,10 +74,7 @@ describe("rejection sampling", () => {
     const samples = 200_000;
 
     for (let i = 0; i < samples; i++) {
-      const result = runWeightedDraw(
-        [1n, 1n, 1n, 1n, 1n],
-        (bound) => prng.nextBelow(bound),
-      );
+      const result = runWeightedDraw([1n, 1n, 1n, 1n, 1n], (bound) => prng.nextBelow(bound));
       counts.set(result.randomTarget, (counts.get(result.randomTarget) ?? 0) + 1);
     }
 

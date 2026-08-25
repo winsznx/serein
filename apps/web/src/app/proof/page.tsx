@@ -110,7 +110,10 @@ export default function ProofPage() {
                 "How large the prize was.",
               ].map((item) => (
                 <li key={item} className="flex gap-2.5">
-                  <span aria-hidden="true" className="mt-1.5 h-1 w-1 shrink-0 rounded-pill bg-violet" />
+                  <span
+                    aria-hidden="true"
+                    className="mt-1.5 h-1 w-1 shrink-0 rounded-pill bg-violet"
+                  />
                   {item}
                 </li>
               ))}
@@ -138,8 +141,8 @@ export default function ProofPage() {
           <h2 className="text-subheading">Anonymity set caveat</h2>
           <p className="mt-2 text-small text-white/70">{warning}</p>
           <p className="mt-2 text-small text-white/55">
-            Serein states this rather than hiding it. The aggregate is a genuine disclosure, and with
-            very few savers it is a large one.
+            Serein states this rather than hiding it. The aggregate is a genuine disclosure, and
+            with very few savers it is a large one.
           </p>
         </Card>
       ) : null}

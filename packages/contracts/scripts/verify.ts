@@ -76,7 +76,8 @@ async function verifyOnSourcify(
       error?: { message?: string; customCode?: string };
     };
     if (!job.isJobCompleted) continue;
-    if (job.error) throw new Error(job.error.message ?? job.error.customCode ?? "verification failed");
+    if (job.error)
+      throw new Error(job.error.message ?? job.error.customCode ?? "verification failed");
     return `verified (${job.contract?.match ?? "match"})`;
   }
 

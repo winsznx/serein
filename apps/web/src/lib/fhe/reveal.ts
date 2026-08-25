@@ -35,7 +35,10 @@ const authorizations = new Map<string, Authorization>();
 const revealed = new Map<string, bigint>();
 
 function authKey(user: string, contracts: string[]): string {
-  return `${user.toLowerCase()}|${[...contracts].map((c) => c.toLowerCase()).sort().join(",")}`;
+  return `${user.toLowerCase()}|${[...contracts]
+    .map((c) => c.toLowerCase())
+    .sort()
+    .join(",")}`;
 }
 
 function valueKey(user: string, handle: string): string {
@@ -124,7 +127,9 @@ function isUserRejection(error: unknown): boolean {
   const candidate = error as { code?: number | string; name?: string; message?: string };
   if (candidate.code === 4001 || candidate.code === "ACTION_REJECTED") return true;
   if (candidate.name === "UserRejectedRequestError") return true;
-  return typeof candidate.message === "string" && /reject|denied|cancell?ed/i.test(candidate.message);
+  return (
+    typeof candidate.message === "string" && /reject|denied|cancell?ed/i.test(candidate.message)
+  );
 }
 
 /**

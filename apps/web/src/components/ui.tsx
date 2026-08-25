@@ -109,9 +109,7 @@ export function Card({
     deep: "bg-abyss border border-white/10",
     light: "bg-paper border border-ash/50",
   } as const;
-  return (
-    <Tag className={cn("rounded-card p-6", surfaces[surface], className)}>{children}</Tag>
-  );
+  return <Tag className={cn("rounded-card p-6", surfaces[surface], className)}>{children}</Tag>;
 }
 
 export function Badge({
@@ -201,7 +199,12 @@ export function DataRow({
   const border = surface === "dark" ? "border-white/10" : "border-ash/40";
   const muted = surface === "dark" ? "text-white/60" : "text-iron";
   return (
-    <div className={cn("flex flex-col gap-1 border-b py-3.5 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6", border)}>
+    <div
+      className={cn(
+        "flex flex-col gap-1 border-b py-3.5 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6",
+        border,
+      )}
+    >
       <dt className={cn("text-small", muted)}>{label}</dt>
       <dd className="min-w-0 text-small font-medium sm:text-right">
         {children}

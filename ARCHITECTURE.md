@@ -72,8 +72,8 @@ The construction survives encryption because of one asymmetry: **the time axis s
   substantially more.
 - Only `balance` and `cumulative` are ever ciphertexts.
 
-Nothing about *when* someone acted is hidden. That was never hideable — it is visible from the
-transaction itself. What is hidden is *how much*, which is the part that matters.
+Nothing about _when_ someone acted is hidden. That was never hideable — it is visible from the
+transaction itself. What is hidden is _how much_, which is the part that matters.
 
 ### 2.3 Same-block writes
 
@@ -97,7 +97,7 @@ the consistency proof still passes.
 
 PoolTogether overwrites observations within a period using a ring buffer. Doing that correctly needs
 a period-alignment argument that has to hold against every draw boundary, and getting it subtly wrong
-corrupts weights *silently* rather than reverting.
+corrupts weights _silently_ rather than reverting.
 
 Serein appends. Lookups are O(log n) by binary search over public timestamps, no draw operation ever
 scans a series linearly, and the growth cost is documented in BENCHMARKS.md rather than hidden. The
@@ -165,7 +165,7 @@ The second equality holds because `x < T`, so the event `r = x` implies `r < T`.
 independent of `x`, so the conditional distribution is uniform. ∎
 
 **Rejection leaks nothing about the eventual outcome.** A rejected candidate reveals only that it
-was ≥ T. That event is independent of which value below `T` a *fresh* draw will produce, because
+was ≥ T. That event is independent of which value below `T` a _fresh_ draw will produce, because
 each candidate is drawn independently. So restarting preserves uniformity exactly, and the public
 attempt counter discloses nothing beyond an operational fact already visible in the transcript.
 
@@ -244,20 +244,20 @@ Gas fees are not principal and are disclosed separately.
 
 FHE addition does not revert on overflow. A sum exceeding the type's range wraps silently and
 produces a ciphertext indistinguishable from a correct one. Correctness must come from a bound proved
-*before* the operation.
+_before_ the operation.
 
 The chain, in `libraries/Bounds.sol` and mirrored in `packages/reference-model/src/bounds.ts`:
 
-| Quantity | Bound | Why it holds |
-|---|---|---|
-| Total principal | `2^60 − 1` | Enforced at the deposit callback; a breach returns encrypted `false` and the token refunds |
-| Individual balance | `≤ total ≤ 2^60` | Follows from the above |
-| `total + amount` pre-check | `< 2^64` | `2 × MAX_TOTAL_PRINCIPAL < 2^64`, so the intermediate cannot wrap |
-| Cumulative observation | `2^60 × 2^32 = 2^92` | Fits `euint128` with 36 bits spare |
-| Epoch weight `W_i` | `2^60 × 2^26 = 2^86` | Epoch capped at `MAX_EPOCH_SECONDS` |
-| Aggregate `T` | `≤ 2^86` | Same quantity on the aggregate series |
-| `nextPowerOfTwo(T)` | `≤ 2^87 < 2^128` | Never overflows the randomness type |
-| Prefix `P` | `≤ T ≤ 2^86` | Monotone, terminates at `T` |
+| Quantity                   | Bound                | Why it holds                                                                               |
+| -------------------------- | -------------------- | ------------------------------------------------------------------------------------------ |
+| Total principal            | `2^60 − 1`           | Enforced at the deposit callback; a breach returns encrypted `false` and the token refunds |
+| Individual balance         | `≤ total ≤ 2^60`     | Follows from the above                                                                     |
+| `total + amount` pre-check | `< 2^64`             | `2 × MAX_TOTAL_PRINCIPAL < 2^64`, so the intermediate cannot wrap                          |
+| Cumulative observation     | `2^60 × 2^32 = 2^92` | Fits `euint128` with 36 bits spare                                                         |
+| Epoch weight `W_i`         | `2^60 × 2^26 = 2^86` | Epoch capped at `MAX_EPOCH_SECONDS`                                                        |
+| Aggregate `T`              | `≤ 2^86`             | Same quantity on the aggregate series                                                      |
+| `nextPowerOfTwo(T)`        | `≤ 2^87 < 2^128`     | Never overflows the randomness type                                                        |
+| Prefix `P`                 | `≤ T ≤ 2^86`         | Monotone, terminates at `T`                                                                |
 
 `MAX_ELAPSED_TOTAL` is `2^32` seconds (~136 years), so the cumulative bound holds for the life of the
 contract rather than for a configured window.
@@ -305,7 +305,7 @@ goes straight from `AwaitingTotalProof` to `Finalized` with no winner. There is 
 - **Monotonic**, with exactly one backward edge: the rejection loop.
 - **Permissionless.** Every transition is callable by anyone. The keeper holds no privilege.
 - **Replay-safe.** Resubmitting an accepted proof fails the status check.
-- **Forgery-safe.** `FHE.checkSignatures` verifies the KMS signed *that value* for *that handle*, so
+- **Forgery-safe.** `FHE.checkSignatures` verifies the KMS signed _that value_ for _that handle_, so
   a made-up number fails and a real number from another draw fails.
 - **Idempotent batches.** A batch that reverts leaves the cursor unmoved, so retrying never
   double-processes anyone.
@@ -325,17 +325,17 @@ epoch is still exact, whereas replaying hundreds of tiny catch-up draws would no
 
 Every persistent ciphertext handle has an explicit access plan.
 
-| Handle | Contract | User | Public |
-|---|---|---|---|
-| Current principal | yes | owner only | never |
-| TWAB observations (balance, cumulative) | yes | **no** | never |
-| Aggregate weight, before close | yes | no | no |
-| Aggregate weight, after close | yes | no | **yes, deliberately** |
-| Random target | yes | no | **never** |
-| Acceptance boolean | yes | no | yes |
-| Consistency boolean | yes | no | yes |
-| Winner predicate | pool + transient to reserve | no | never |
-| Prize credit | reserve | owner only | never |
+| Handle                                  | Contract                    | User       | Public                |
+| --------------------------------------- | --------------------------- | ---------- | --------------------- |
+| Current principal                       | yes                         | owner only | never                 |
+| TWAB observations (balance, cumulative) | yes                         | **no**     | never                 |
+| Aggregate weight, before close          | yes                         | no         | no                    |
+| Aggregate weight, after close           | yes                         | no         | **yes, deliberately** |
+| Random target                           | yes                         | no         | **never**             |
+| Acceptance boolean                      | yes                         | no         | yes                   |
+| Consistency boolean                     | yes                         | no         | yes                   |
+| Winner predicate                        | pool + transient to reserve | no         | never                 |
+| Prize credit                            | reserve                     | owner only | never                 |
 
 Historical observations are granted to the contract **and to nobody else, including their owner**.
 Two cumulative points at known timestamps reconstruct the balance between them, so granting a user

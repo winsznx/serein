@@ -129,9 +129,9 @@ export default function LandingPage() {
             <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
               <div className="space-y-6">
                 <p className="text-body text-white/70">
-                  Picking a winner in proportion to hidden weights needs a uniform random number over
-                  the pool&apos;s total. The coprocessor will only draw random numbers bounded by a
-                  power of two, and a pool&apos;s total is never a power of two.
+                  Picking a winner in proportion to hidden weights needs a uniform random number
+                  over the pool&apos;s total. The coprocessor will only draw random numbers bounded
+                  by a power of two, and a pool&apos;s total is never a power of two.
                 </p>
                 <p className="text-body text-white/70">
                   Serein closes that gap with rejection sampling: draw over the next power of two,
@@ -194,8 +194,8 @@ export default function LandingPage() {
                 <p className="text-subheading">Savings pool</p>
                 <p className="text-small text-white/65">
                   Holds every saver&apos;s encrypted principal. It can compute draw weights and move
-                  your own balance back to you. It has no authority over prize funds, and no function
-                  that spends them.
+                  your own balance back to you. It has no authority over prize funds, and no
+                  function that spends them.
                 </p>
                 <div className="rounded-badge bg-white/[0.06] px-3 py-2 text-caption text-white/60">
                   Your principal → Savings pool → back to you
@@ -206,9 +206,9 @@ export default function LandingPage() {
                 <Eyebrow>Prize money</Eyebrow>
                 <p className="text-subheading">Prize reserve</p>
                 <p className="text-small text-white/65">
-                  Funded separately, holds no principal, and pays at most one prize per draw. All the
-                  savings pool can tell it is an encrypted yes-or-no about who won — a value the pool
-                  itself cannot read.
+                  Funded separately, holds no principal, and pays at most one prize per draw. All
+                  the savings pool can tell it is an encrypted yes-or-no about who won — a value the
+                  pool itself cannot read.
                 </p>
                 <div className="rounded-badge bg-white/[0.06] px-3 py-2 text-caption text-white/60">
                   Prize funding → Prize reserve → winner
@@ -218,8 +218,8 @@ export default function LandingPage() {
 
             <p className="max-w-3xl text-small text-white/50">
               Network gas fees still apply and are not principal. On Sepolia the prize reserve is
-              funded by an operator rather than by real yield — Serein calls that what it is and does
-              not display an APY it cannot measure.
+              funded by an operator rather than by real yield — Serein calls that what it is and
+              does not display an APY it cannot measure.
             </p>
           </div>
         </section>

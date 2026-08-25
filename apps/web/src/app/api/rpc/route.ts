@@ -59,10 +59,9 @@ function rejection(id: RpcRequest["id"], code: number, message: string): unknown
 export async function POST(request: Request): Promise<NextResponse> {
   const upstream = process.env.SEPOLIA_RPC_URL;
   if (!upstream) {
-    return NextResponse.json(
-      rejection(null, -32000, "The app has no RPC endpoint configured."),
-      { status: 503 },
-    );
+    return NextResponse.json(rejection(null, -32000, "The app has no RPC endpoint configured."), {
+      status: 503,
+    });
   }
 
   const raw = await request.text();

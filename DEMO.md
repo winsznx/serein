@@ -20,25 +20,25 @@ Check the current draw's countdown first and start recording so that step 8 land
 
 ## The script
 
-**0:00 — What it is** *(15s)*
+**0:00 — What it is** _(15s)_
 
 > This is Serein. It's a savings account that runs a prize draw. Your balance is encrypted, your odds
 > are encrypted, and your principal is never at risk. Everything you see is live on Sepolia.
 
 Landing page. Don't linger.
 
-**0:15 — Get in** *(35s)*
+**0:15 — Get in** _(35s)_
 
 Connect wallet → Add savings. Walk the three steps.
 
-> The faucet gives me test tokens. Then I make them private — and I want to be clear that *this*
+> The faucet gives me test tokens. Then I make them private — and I want to be clear that _this_
 > transaction is public, you can see the amount on Etherscan. Everything after it isn't.
 
 Enter an amount, save it.
 
 > Notice this: "Encrypting your amount." That's happening in my browser. The plaintext never leaves.
 
-**0:50 — The signature move** *(30s)*
+**0:50 — The signature move** _(30s)_
 
 On the savings home, the balance shows `••••••`.
 
@@ -51,7 +51,7 @@ Click Reveal, sign, show the number.
 
 Refresh to show it.
 
-**1:20 — Someone else's balance** *(20s)*
+**1:20 — Someone else's balance** _(20s)_
 
 Switch to `/proof`, or open Wallet B's address.
 
@@ -60,7 +60,7 @@ Switch to `/proof`, or open Wallet B's address.
 
 Show the refusal, or the recorded refusals in the campaign artifact.
 
-**1:40 — The draw** *(45s)*
+**1:40 — The draw** _(45s)_
 
 Go to `/proof/draws/<current>` as the draw closes.
 
@@ -78,7 +78,7 @@ Point at the bound and the attempt count.
 > Then it walks the participant list under encryption to find whose share contains that point.
 > Nobody, including the people running this, learns who won.
 
-**2:25 — Your result** *(20s)*
+**2:25 — Your result** _(20s)_
 
 Back to the draw detail. Reveal the result.
 
@@ -90,7 +90,7 @@ If you won, show the amount instead. Don't celebrate; that's the point.
 > Everyone collects with the same button. A non-winner moves an encrypted zero, so collecting doesn't
 > tell anyone whether you won.
 
-**2:45 — Take it out** *(15s)*
+**2:45 — Take it out** _(15s)_
 
 Withdraw.
 
@@ -105,7 +105,7 @@ Withdraw.
 
 ---
 
-## Optional: the recovery clip *(45s)*
+## Optional: the recovery clip _(45s)_
 
 Worth recording separately if there's time. It demonstrates resumability better than any slide.
 

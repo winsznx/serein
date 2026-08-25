@@ -76,9 +76,7 @@ function checkInvariants(result: SimulationResult): void {
   const credited = result.prizeCredits.filter((credit) => credit > 0n);
   expect(credited).toHaveLength(1);
   expect(credited[0]).toBe(scenario.prize);
-  expect(
-    result.prizeCredits.reduce((a, b) => a + b, 0n),
-  ).toBeLessThanOrEqual(scenario.prize);
+  expect(result.prizeCredits.reduce((a, b) => a + b, 0n)).toBeLessThanOrEqual(scenario.prize);
 
   // 20 / 21. Deposits and withdrawals after the epoch closed leave the frozen
   //          weights untouched.

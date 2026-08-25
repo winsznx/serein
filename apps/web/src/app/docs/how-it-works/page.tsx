@@ -45,8 +45,8 @@ export default function HowItWorksPage() {
         </P>
         <Note>
           Because weight is read from two frozen points in history, a withdrawal after a draw closes
-          cannot change the weight that draw already assigned you. That is what makes it safe to keep
-          withdrawals open at every stage.
+          cannot change the weight that draw already assigned you. That is what makes it safe to
+          keep withdrawals open at every stage.
         </Note>
       </DocSection>
 
@@ -97,13 +97,13 @@ P(r = x | r < T) = (1/B) / (T/B) = 1/T`}</CodeBlock>
           Every part of that comparison is encrypted: the running total, the random point, and the
           yes-or-no answer for each participant. The contract performs the comparison without
           learning its result. Because the stretches tile the range with no gaps and no overlap,
-          exactly one participant matches — and someone with no weight owns a stretch of zero length,
-          which no point can fall inside.
+          exactly one participant matches — and someone with no weight owns a stretch of zero
+          length, which no point can fall inside.
         </P>
         <Note>
-          The walk happens in batches. Encrypted operations are metered, and a single transaction can
-          only do so many, so the cursor is stored on chain and anyone can push it forward. A batch
-          that fails leaves the cursor untouched, so retrying is always safe.
+          The walk happens in batches. Encrypted operations are metered, and a single transaction
+          can only do so many, so the cursor is stored on chain and anyone can push it forward. A
+          batch that fails leaves the cursor untouched, so retrying is always safe.
         </Note>
       </DocSection>
 

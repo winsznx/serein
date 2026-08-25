@@ -195,7 +195,9 @@ function MiniStat({
   return (
     <Card className="p-5">
       <p className="text-caption text-white/50">{label}</p>
-      <p className={masked ? "mt-1.5 ciphertext text-subheading" : "mt-1.5 tabular text-subheading"}>
+      <p
+        className={masked ? "mt-1.5 ciphertext text-subheading" : "mt-1.5 tabular text-subheading"}
+      >
         {value}
       </p>
       <p className="mt-1 text-caption text-white/45">{hint}</p>
@@ -295,7 +297,8 @@ function Disconnected() {
       <h1 className="text-heading">Connect a wallet to start saving</h1>
       <p className="text-body text-white/65">
         Serein runs on Sepolia with test tokens. Connecting is read-only until you approve a
-        transaction, and revealing your own balance only ever asks for a signature — never a transfer.
+        transaction, and revealing your own balance only ever asks for a signature — never a
+        transfer.
       </p>
       <div className="flex justify-center">
         <ConnectButton />

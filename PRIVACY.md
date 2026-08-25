@@ -10,25 +10,25 @@ from a single shared source (`packages/protocol-sdk/src/protocol.ts`), so the tw
 
 ## The disclosure ledger
 
-| Information | Public? | Why |
-|---|---|---|
-| That a wallet interacted with Serein | **Yes** | Ordinary transaction metadata on a public chain. Nothing can hide this. |
-| Participant addresses | **Yes** | The registry must be public and ordered so the draw walk is deterministic and anyone can verify nobody was skipped. |
-| Your savings balance | No | `euint64`. Only you can decrypt it. |
-| Your balance history | No | Encrypted TWAB observations, readable by the contract alone — **not even by you**, since two points reconstruct the balance between them. |
-| Your draw weight | No | `euint128`, computed under encryption, never decrypted. |
-| Your odds | No | Derived from your weight, which stays encrypted. |
-| Number of participants | **Yes** | Operational state needed to verify the draw covered everyone. |
-| Draw timestamps and state | **Yes** | Needed for liveness and so anyone can push a stalled draw forward. |
-| **Total draw weight, after the draw closes** | **Yes, deliberately** | See below. |
-| The random target | No | Never decrypted, never granted to any address. |
-| Whether a candidate was accepted | **Yes** | A yes-or-no verification result. Says nothing about the candidate's value. |
-| Number of rejection attempts | **Yes** | Operational transcript, already visible from transactions. |
-| Who won | No | An encrypted boolean per participant. |
-| The prize amount | No | Allocated as an encrypted input, credited under encryption. |
-| That an address called claim or withdraw | **Yes** | Transaction metadata. The amounts are encrypted; the call is not. |
-| Amounts wrapped into / out of the confidential token | **Boundary** | Wrapping crosses from a transparent ERC-20, so that amount is visible. Everything after it is not. |
-| Total ever funded into the prize source | **Boundary** | Same transparent boundary. How that total is split between draws is encrypted. |
+| Information                                          | Public?               | Why                                                                                                                                       |
+| ---------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| That a wallet interacted with Serein                 | **Yes**               | Ordinary transaction metadata on a public chain. Nothing can hide this.                                                                   |
+| Participant addresses                                | **Yes**               | The registry must be public and ordered so the draw walk is deterministic and anyone can verify nobody was skipped.                       |
+| Your savings balance                                 | No                    | `euint64`. Only you can decrypt it.                                                                                                       |
+| Your balance history                                 | No                    | Encrypted TWAB observations, readable by the contract alone — **not even by you**, since two points reconstruct the balance between them. |
+| Your draw weight                                     | No                    | `euint128`, computed under encryption, never decrypted.                                                                                   |
+| Your odds                                            | No                    | Derived from your weight, which stays encrypted.                                                                                          |
+| Number of participants                               | **Yes**               | Operational state needed to verify the draw covered everyone.                                                                             |
+| Draw timestamps and state                            | **Yes**               | Needed for liveness and so anyone can push a stalled draw forward.                                                                        |
+| **Total draw weight, after the draw closes**         | **Yes, deliberately** | See below.                                                                                                                                |
+| The random target                                    | No                    | Never decrypted, never granted to any address.                                                                                            |
+| Whether a candidate was accepted                     | **Yes**               | A yes-or-no verification result. Says nothing about the candidate's value.                                                                |
+| Number of rejection attempts                         | **Yes**               | Operational transcript, already visible from transactions.                                                                                |
+| Who won                                              | No                    | An encrypted boolean per participant.                                                                                                     |
+| The prize amount                                     | No                    | Allocated as an encrypted input, credited under encryption.                                                                               |
+| That an address called claim or withdraw             | **Yes**               | Transaction metadata. The amounts are encrypted; the call is not.                                                                         |
+| Amounts wrapped into / out of the confidential token | **Boundary**          | Wrapping crosses from a transparent ERC-20, so that amount is visible. Everything after it is not.                                        |
+| Total ever funded into the prize source              | **Boundary**          | Same transparent boundary. How that total is split between draws is encrypted.                                                            |
 
 ---
 
@@ -48,7 +48,7 @@ already closed, and it is not anyone's balance, weight, or odds.
 
 **When it is not safe.** A sum only hides its parts when there are enough of them:
 
-- **One participant:** the total *is* that participant's weight. Complete disclosure.
+- **One participant:** the total _is_ that participant's weight. Complete disclosure.
 - **Two participants:** either can subtract their own weight to learn the other's.
 - **Three or four:** the total narrows everyone's range considerably.
 
@@ -103,8 +103,8 @@ REFUSED  decryption of participant A's historical observation
 ALLOWED  public decryption of the frozen aggregate → 360000000000 (matches on-chain: true)
 ```
 
-The refusals carry Zama's own reasons — *"Handle … is not publicly decryptable"*, *"User address …
-is not authorized"* — recorded verbatim in [`evidence/live/draws/`](evidence/live/draws/).
+The refusals carry Zama's own reasons — _"Handle … is not publicly decryptable"_, _"User address …
+is not authorized"_ — recorded verbatim in [`evidence/live/draws/`](evidence/live/draws/).
 
 The proof view prints the random target's handle so you can attempt this yourself.
 

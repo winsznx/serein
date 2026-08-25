@@ -128,9 +128,7 @@ export async function acquirePrivateUSDC(
   await (
     await stack.testUSDC.connect(signer).approve(stack.addresses.confidentialUSDC, amount)
   ).wait();
-  await (
-    await stack.confidentialUSDC.connect(signer).wrap(signer.address, amount)
-  ).wait();
+  await (await stack.confidentialUSDC.connect(signer).wrap(signer.address, amount)).wait();
 }
 
 /** Deposit `amount` of confidential principal into the pool via the ERC-7984 callback. */
@@ -194,9 +192,7 @@ export async function fundDraw(
     .encrypt();
 
   await (
-    await prizeSource
-      .connect(deployer)
-      .fundDraw(drawId, input.handles[0]!, input.inputProof)
+    await prizeSource.connect(deployer).fundDraw(drawId, input.handles[0]!, input.inputProof)
   ).wait();
 }
 

@@ -222,7 +222,8 @@ export function NetworkGuard({ children }: { children: React.ReactNode }) {
 export function TestnetNotice({ className }: { className?: string }) {
   return (
     <p className={cn("text-caption text-white/45", className)}>
-      Sepolia testnet. Test tokens have no monetary value. Serein has not been independently audited.
+      Sepolia testnet. Test tokens have no monetary value. Serein has not been independently
+      audited.
     </p>
   );
 }

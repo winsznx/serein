@@ -32,7 +32,9 @@ const sepoliaAccounts = [
   process.env.PARTICIPANT_A_PRIVATE_KEY,
   process.env.PARTICIPANT_B_PRIVATE_KEY,
   process.env.PARTICIPANT_C_PRIVATE_KEY,
-].filter((key): key is string => typeof key === "string" && key.length === 66 && key.startsWith("0x"));
+].filter(
+  (key): key is string => typeof key === "string" && key.length === 66 && key.startsWith("0x"),
+);
 
 const config: HardhatUserConfig = {
   solidity: {

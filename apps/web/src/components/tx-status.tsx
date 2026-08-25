@@ -62,7 +62,11 @@ function describe(phase: TxPhase): {
         className: accent,
       };
     case "submitting":
-      return { title: "Sending transaction", className: neutral, ...(phase.hash ? { hash: phase.hash } : {}) };
+      return {
+        title: "Sending transaction",
+        className: neutral,
+        ...(phase.hash ? { hash: phase.hash } : {}),
+      };
     case "pending":
       return {
         title: "Confirming on Sepolia",

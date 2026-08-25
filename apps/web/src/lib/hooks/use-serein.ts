@@ -218,7 +218,7 @@ export function useWalletSnapshot(): WalletSnapshot {
     query: { enabled },
   });
 
-  const value = <T,>(index: number, fallback: T): T => {
+  const value = <T>(index: number, fallback: T): T => {
     const entry = data?.[index];
     if (!entry || entry.status !== "success") return fallback;
     return entry.result as T;
@@ -278,7 +278,7 @@ export function useDrawResult(drawId: bigint | undefined) {
     query: { enabled },
   });
 
-  const value = <T,>(index: number, fallback: T): T => {
+  const value = <T>(index: number, fallback: T): T => {
     const entry = data?.[index];
     if (!entry || entry.status !== "success") return fallback;
     return entry.result as T;

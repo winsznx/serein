@@ -36,7 +36,9 @@ export default function ProofDrawPage({ params }: { params: Promise<{ drawId: st
     return <p className="py-12 text-center text-body text-white/60">That is not a draw number.</p>;
   }
   if (isLoading) {
-    return <p className="py-12 text-center text-body text-white/60">Reading draw #{drawIdParam}…</p>;
+    return (
+      <p className="py-12 text-center text-body text-white/60">Reading draw #{drawIdParam}…</p>
+    );
   }
   if (!draw || draw.status === DrawStatus.None) {
     return (
@@ -254,7 +256,11 @@ function ProofRow({
         <dt className="text-small text-white/60">{label}</dt>
         <dd className="flex flex-wrap items-center gap-2 sm:justify-end">
           <StatusPill state={disclosure}>
-            {disclosure === "public" ? "Public" : disclosure === "encrypted" ? "Encrypted" : "Verified"}
+            {disclosure === "public"
+              ? "Public"
+              : disclosure === "encrypted"
+                ? "Encrypted"
+                : "Verified"}
           </StatusPill>
           <span className="tabular text-small font-medium">{value}</span>
         </dd>

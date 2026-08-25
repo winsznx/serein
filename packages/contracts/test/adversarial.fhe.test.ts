@@ -52,9 +52,8 @@ describe("Serein — adversarial", function () {
       expect(await revealBalance(stack, alice)).to.equal(500n * USDC);
 
       const handle = await stack.pool.confidentialBalanceOf(alice.address);
-      await expect(
-        fhevm.userDecryptEuint(FhevmType.euint64, handle, stack.addresses.pool, bob),
-      ).to.be.rejected;
+      await expect(fhevm.userDecryptEuint(FhevmType.euint64, handle, stack.addresses.pool, bob)).to
+        .be.rejected;
     });
 
     it("refuses public decryption of an individual balance", async () => {
@@ -187,17 +186,13 @@ describe("Serein — adversarial", function () {
       const trueTotal = real.value;
 
       // Same proof, different number. The KMS signed the pair, not the proof alone.
-      await expect(
-        stack.pool.submitTotalProof(drawId, trueTotal + 1n, real.proof),
-      ).to.be.reverted;
+      await expect(stack.pool.submitTotalProof(drawId, trueTotal + 1n, real.proof)).to.be.reverted;
 
       // An empty proof is not a shortcut either.
       await expect(stack.pool.submitTotalProof(drawId, trueTotal, "0x")).to.be.reverted;
 
       // The genuine pair still works, so the draw is not wedged by the failed attempts.
-      await (
-        await stack.pool.submitTotalProof(drawId, trueTotal, real.proof)
-      ).wait();
+      await (await stack.pool.submitTotalProof(drawId, trueTotal, real.proof)).wait();
       expect((await stack.pool.getDraw(drawId)).totalVerified).to.equal(true);
     });
 
@@ -236,9 +231,8 @@ describe("Serein — adversarial", function () {
       await (await stack.pool.closeDraw()).wait();
 
       // The first draw's signed cleartext says nothing about the second draw's handle.
-      await expect(
-        stack.pool.submitTotalProof(secondId, firstResult.value, firstResult.proof),
-      ).to.be.reverted;
+      await expect(stack.pool.submitTotalProof(secondId, firstResult.value, firstResult.proof)).to
+        .be.reverted;
     });
 
     it("cannot close a draw before its scheduled end", async () => {
@@ -287,12 +281,14 @@ describe("Serein — adversarial", function () {
       const drawId = await stack.pool.currentDrawId();
 
       // While open: nothing downstream is reachable.
-      await expect(
-        stack.pool.generateRandomCandidate(drawId),
-      ).to.be.revertedWithCustomError(stack.pool, "UnexpectedDrawStatus");
-      await expect(
-        stack.pool.processSelectionBatch(drawId, 1n),
-      ).to.be.revertedWithCustomError(stack.pool, "UnexpectedDrawStatus");
+      await expect(stack.pool.generateRandomCandidate(drawId)).to.be.revertedWithCustomError(
+        stack.pool,
+        "UnexpectedDrawStatus",
+      );
+      await expect(stack.pool.processSelectionBatch(drawId, 1n)).to.be.revertedWithCustomError(
+        stack.pool,
+        "UnexpectedDrawStatus",
+      );
       await expect(
         stack.pool.submitConsistencyProof(drawId, true, "0x"),
       ).to.be.revertedWithCustomError(stack.pool, "UnexpectedDrawStatus");
@@ -302,9 +298,10 @@ describe("Serein — adversarial", function () {
       await (await stack.pool.closeDraw()).wait();
 
       // Closed but unverified: randomness is still out of reach.
-      await expect(
-        stack.pool.generateRandomCandidate(drawId),
-      ).to.be.revertedWithCustomError(stack.pool, "UnexpectedDrawStatus");
+      await expect(stack.pool.generateRandomCandidate(drawId)).to.be.revertedWithCustomError(
+        stack.pool,
+        "UnexpectedDrawStatus",
+      );
     });
 
     it("cannot finalize a draw twice", async () => {
@@ -424,9 +421,10 @@ describe("Serein — adversarial", function () {
 
       const result = await runDrawToCompletion(stack);
       await (await stack.reserve.connect(alice).claim(result.drawId)).wait();
-      await expect(
-        stack.reserve.connect(alice).claim(result.drawId),
-      ).to.be.revertedWithCustomError(stack.reserve, "AlreadyClaimed");
+      await expect(stack.reserve.connect(alice).claim(result.drawId)).to.be.revertedWithCustomError(
+        stack.reserve,
+        "AlreadyClaimed",
+      );
     });
 
     it("refuses a claim before the draw is finalized", async () => {
@@ -436,9 +434,10 @@ describe("Serein — adversarial", function () {
       await addSavings(stack, alice, 400n * USDC);
 
       const drawId = await stack.pool.currentDrawId();
-      await expect(
-        stack.reserve.connect(alice).claim(drawId),
-      ).to.be.revertedWithCustomError(stack.reserve, "DrawNotFinalized");
+      await expect(stack.reserve.connect(alice).claim(drawId)).to.be.revertedWithCustomError(
+        stack.reserve,
+        "DrawNotFinalized",
+      );
     });
 
     it("gives the prize reserve no authority over principal", async () => {
@@ -484,9 +483,7 @@ describe("Serein — adversarial", function () {
       const [, alice] = stack.signers;
       if (!alice) throw new Error("need two signers");
       await expect(
-        stack.reserve
-          .connect(alice)
-          .creditParticipant(1n, alice.address, ethers.ZeroHash),
+        stack.reserve.connect(alice).creditParticipant(1n, alice.address, ethers.ZeroHash),
       ).to.be.revertedWithCustomError(stack.reserve, "OnlyPool");
     });
 
@@ -505,12 +502,7 @@ describe("Serein — adversarial", function () {
       await expect(
         stack.pool
           .connect(alice)
-          .onConfidentialTransferReceived(
-            alice.address,
-            alice.address,
-            ethers.ZeroHash,
-            "0x",
-          ),
+          .onConfidentialTransferReceived(alice.address, alice.address, ethers.ZeroHash, "0x"),
       ).to.be.revertedWithCustomError(stack.pool, "UnsupportedToken");
     });
 

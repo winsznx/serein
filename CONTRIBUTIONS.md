@@ -17,6 +17,7 @@ HTML page; Sourcify moved verification to `POST /v2/verify/{chainId}/{address}`,
 at `GET /v2/verify/{verificationId}`.
 
 **Evidence:**
+
 ```
 GET  https://sourcify.dev/server/health   → 200 "Alive and kicking!"
 POST https://sourcify.dev/server/verify   → 404 (HTML)
@@ -44,8 +45,8 @@ Serein contracts verify with `exact_match` this way. The same shape would drop i
 first. Reasonable, but the error names the state rather than the fix, and the failure surfaces on a
 property read, which does not look like something that needs initialising.
 
-**Suggestion:** name the remedy in the error — *"call `await fhevm.initializeCLIApi()` before using
-`fhevm` outside the test runner"*. A one-line change that saves a documentation hunt.
+**Suggestion:** name the remedy in the error — _"call `await fhevm.initializeCLIApi()` before using
+`fhevm` outside the test runner"_. A one-line change that saves a documentation hunt.
 
 ---
 
@@ -96,7 +97,7 @@ Two pieces here are general rather than Serein-specific, and are written to be l
 **`EncryptedTWAB`** (`packages/contracts/contracts/libraries/EncryptedTWAB.sol`) — time-weighted
 balance accounting where the balance is a ciphertext. The design point worth reusing is the split:
 timestamps stay plaintext so observations can be binary-searched and the extrapolation multiply is a
-*scalar* operation, while balance and cumulative are encrypted. Anything needing encrypted history —
+_scalar_ operation, while balance and cumulative are encrypted. Anything needing encrypted history —
 confidential voting weight, streaming, vesting — needs this shape.
 
 **`ExactWeightedRandom`** (`.../ExactWeightedRandom.sol`) — exact weighted sampling from
