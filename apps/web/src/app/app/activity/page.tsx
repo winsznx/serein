@@ -2,10 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { parseAbiItem } from "viem";
-import { useAccount, usePublicClient } from "wagmi";
+import { usePublicClient } from "wagmi";
 
 import { Card, StatusPill } from "@/components/ui";
-import { ConnectButton } from "@/components/wallet";
+import { ConnectButton, useWalletStatus } from "@/components/wallet";
 import { deployment, explorerTx } from "@/lib/chain";
 import { getDeployment } from "@serein/protocol-sdk";
 
@@ -55,7 +55,7 @@ interface Row {
 }
 
 export default function ActivityPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, isRestoring } = useWalletStatus();
   const publicClient = usePublicClient();
   const state = deployment();
 
@@ -120,6 +120,14 @@ export default function ActivityPage() {
   if (!state.ready) {
     return (
       <p className="py-12 text-center text-body text-white/60">No deployment on this chain.</p>
+    );
+  }
+
+  if (isRestoring) {
+    return (
+      <p className="py-12 text-center text-body text-white/50" aria-live="polite">
+        Restoring your session…
+      </p>
     );
   }
 

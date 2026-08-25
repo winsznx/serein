@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useWriteContract } from "wagmi";
+import { useWriteContract } from "wagmi";
 
 import { TxStatus } from "@/components/tx-status";
 import { Badge, Button, ButtonLink, Card, StatusPill } from "@/components/ui";
-import { ConnectButton, TestnetNotice } from "@/components/wallet";
+import { ConnectButton, TestnetNotice, useWalletStatus } from "@/components/wallet";
 import { deployment } from "@/lib/chain";
 import { getFheInstance, toHex } from "@/lib/fhe/sdk";
 import { formatCountdown, formatTokenAmount, parseTokenAmount, TOKEN_SYMBOL } from "@/lib/format";
@@ -20,7 +20,7 @@ import { useTxFlow } from "@/lib/hooks/use-tx-flow";
  * in plain language instead of letting a saver discover it afterwards on a block explorer.
  */
 export default function SavePage() {
-  const { isConnected, address } = useAccount();
+  const { address, isConnected, isRestoring } = useWalletStatus();
   const state = useDeployment();
   const wallet = useWalletSnapshot();
 
@@ -28,6 +28,14 @@ export default function SavePage() {
     return (
       <p className="py-12 text-center text-body text-white/60">
         Serein has no deployment on this chain yet.
+      </p>
+    );
+  }
+
+  if (isRestoring) {
+    return (
+      <p className="py-12 text-center text-body text-white/50" aria-live="polite">
+        Restoring your session…
       </p>
     );
   }

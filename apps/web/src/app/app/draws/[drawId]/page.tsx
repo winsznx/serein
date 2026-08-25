@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { use } from "react";
-import { useAccount, useSignTypedData, useWriteContract } from "wagmi";
+import { useSignTypedData, useWriteContract } from "wagmi";
 
 import { DrawCountdown, DrawProgress, DrawStatusPill } from "@/components/draw-progress";
 import { PrivateValue, useRevealState } from "@/components/private-value";
 import { TxStatus } from "@/components/tx-status";
 import { Button, ButtonLink, Card, DataRow, StatusPill } from "@/components/ui";
+import { useWalletStatus } from "@/components/wallet";
 import { deployment } from "@/lib/chain";
 import { revealValue } from "@/lib/fhe/reveal";
 import {
@@ -33,7 +34,7 @@ export default function DrawDetailPage({ params }: { params: Promise<{ drawId: s
   const parsed = /^\d+$/.test(drawIdParam) ? BigInt(drawIdParam) : null;
   const queryId = parsed ?? undefined;
 
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, isRestoring } = useWalletStatus();
   const state = useDeployment();
   const { draw, isLoading } = useDraw(queryId);
   const result = useDrawResult(queryId);
@@ -84,7 +85,11 @@ export default function DrawDetailPage({ params }: { params: Promise<{ drawId: s
       <Card className="space-y-4">
         <h2 className="text-subheading">Your result</h2>
 
-        {!isConnected || !address ? (
+        {isRestoring ? (
+          <p className="text-small text-white/50" aria-live="polite">
+            Restoring your session…
+          </p>
+        ) : !isConnected || !address ? (
           <p className="text-small text-white/60">Connect a wallet to see your result.</p>
         ) : !settled ? (
           <p className="text-small text-white/60">

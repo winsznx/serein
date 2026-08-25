@@ -1,25 +1,68 @@
 "use client";
 
+import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useState, type ReactNode } from "react";
-import { WagmiProvider, useAccount, useChainId } from "wagmi";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { WagmiProvider, type State, useAccount, useChainId } from "wagmi";
 
 import { clearRevealedValues } from "@/lib/fhe/reveal";
 import { resetFheInstance } from "@/lib/fhe/sdk";
 import { wagmiConfig } from "@/lib/wagmi";
 
+import "@rainbow-me/rainbowkit/styles.css";
+
 /**
- * Drop every decrypted value the moment the wallet or the chain changes.
+ * RainbowKit, wearing Serein's design system rather than its own.
  *
- * Without this, switching accounts would leave the previous account's balance on screen — visually
- * attributed to the new one. That is the kind of bug that turns a privacy product into a
- * misinformation product, so it is handled at the provider level rather than per screen.
+ * The modal is the one part of the product a user did not see us build, so it is the fastest place
+ * to look imported. Matching the accent, the pill radius and the surface colours is what keeps it
+ * feeling like the same application.
+ */
+const sereinTheme = darkTheme({
+  accentColor: "#998eff",
+  accentColorForeground: "#ffffff",
+  borderRadius: "large",
+  fontStack: "system",
+  overlayBlur: "small",
+});
+
+const theme = {
+  ...sereinTheme,
+  colors: {
+    ...sereinTheme.colors,
+    modalBackground: "#221d1d",
+    modalBorder: "rgba(255,255,255,0.10)",
+    profileForeground: "#0f0f10",
+    menuItemBackground: "rgba(255,255,255,0.06)",
+    generalBorder: "rgba(255,255,255,0.10)",
+  },
+  radii: { ...sereinTheme.radii, actionButton: "9999px", connectButton: "9999px" },
+};
+
+/**
+ * Drop every decrypted value when the wallet or chain changes — but not while reconnecting.
+ *
+ * The distinction matters. On a refresh, wagmi passes through `reconnecting` before landing on the
+ * same address it had before. Treating that transition as a change would clear a perfectly valid
+ * session on every page load. What must be cleared is a genuine switch to a *different* account,
+ * because leaving the previous account's balance on screen would attribute it to the new one — the
+ * kind of bug that turns a privacy product into a misinformation product.
  */
 function RevealLifecycle({ children }: { children: ReactNode }) {
   const { address, status } = useAccount();
   const chainId = useChainId();
+  const previous = useRef<{ address?: string; chainId?: number } | null>(null);
 
   useEffect(() => {
+    if (status === "connecting" || status === "reconnecting") return;
+
+    const current = { address, chainId };
+    const before = previous.current;
+    previous.current = current;
+
+    if (before === null) return;
+    if (before.address === current.address && before.chainId === current.chainId) return;
+
     clearRevealedValues();
     resetFheInstance();
   }, [address, chainId, status]);
@@ -27,7 +70,14 @@ function RevealLifecycle({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({
+  children,
+  initialState,
+}: {
+  children: ReactNode;
+  /** Connection state recovered from the request cookie, so the first paint is already correct. */
+  initialState?: State | undefined;
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -45,9 +95,11 @@ export function Providers({ children }: { children: ReactNode }) {
   );
 
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={wagmiConfig} initialState={initialState} reconnectOnMount>
       <QueryClientProvider client={queryClient}>
-        <RevealLifecycle>{children}</RevealLifecycle>
+        <RainbowKitProvider theme={theme} modalSize="compact" showRecentTransactions={false}>
+          <RevealLifecycle>{children}</RevealLifecycle>
+        </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

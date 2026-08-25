@@ -134,15 +134,47 @@ Isolated behind `apps/web/src/lib/fhe/sdk.ts` so the swap is one file.
 
 ---
 
-## wagmi 2 and a hand-built connect UI
+## RainbowKit for wallet choice, Serein's styling for the button
 
-RainbowKit 2.2.11 requires `wagmi ^2.9`, so wagmi 3 would have meant no RainbowKit. Since the design
-system is specific — pill CTAs, one accent, no shadows, weights capped at 500 — an off-the-shelf
-modal would have been the one part of the product that looked imported. Building it also made the
-failure states legible: "no wallet installed", "you declined", and "wrong network" are three
-situations with three different next actions, and a generic modal collapses them into one spinner.
+The first version of this had a hand-built connect UI. It looked right and it was wrong: it offered
+injected wallets and nothing else, so anyone using Rabby, Rainbow, Phantom, OKX or a phone was
+effectively told to go and install MetaMask. That is not a design decision, it is a gap.
 
-wagmi 2 is also what Zama's own React template uses.
+RainbowKit now owns the chooser and `ConnectButton.Custom` keeps the entry point on-system — the
+modal is themed to the midnight surface, the violet accent and the pill radius, so it does not read
+as an imported component. Wallets that reach the browser through an injected provider or their own
+SDK are always listed; WalletConnect-backed ones appear only when a project id is configured, because
+listing a wallet that fails the moment somebody picks it is worse than not listing it.
+
+It cost something. RainbowKit's `wallets` barrel imports every wallet it supports, so the bundler
+follows `frameWallet` to `@coinbase/cdp-sdk` to the optional `@x402/*` micropayment packages, and the
+build fails without them. They are installed as dev dependencies and tree-shaken out of the client
+bundle — measured, the bundle did not grow. A Turbopack `resolveAlias` stub would have been tidier
+and does not intercept those subpath specifiers.
+
+RainbowKit 2.2.11 requires `wagmi ^2.9`, which is a further reason wagmi stays on 2.x.
+
+---
+
+## Connection state in a cookie, not `localStorage`
+
+wagmi's default is `localStorage`. With it, the server renders every page logged-out and the browser
+only reconnects after mount — so a refresh or a fresh page load flashes "Connect wallet" before
+snapping back to the address. Nothing is actually lost, but the product says it was, and a user who
+sees that concludes the session does not survive navigation.
+
+`cookieStorage` plus `cookieToInitialState` hands the server the real connection state, so the first
+paint is already correct and there is no flash to explain away.
+
+The trade, stated in PRIVACY.md rather than buried: the connected address now travels to the server in
+a cookie on every request. It did not before. That address is public information, and the app's own
+RPC proxy already sees queries about it, so nothing newly private is exposed — but it is a real
+change in what the server observes and it belongs in the ledger.
+
+A second fix was needed alongside it. wagmi passes through `reconnecting` before settling, and
+treating that as "disconnected" produced the same flash from a different direction. Every screen that
+gates on a wallet now distinguishes _restoring_ from _absent_, and the reveal cache is no longer
+cleared on a reconnect that lands on the same account.
 
 ---
 

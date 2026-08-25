@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers";
+import { cookieToInitialState } from "wagmi";
 
 import { Providers } from "@/components/providers";
+import { ssrConfig } from "@/lib/wagmi-ssr";
 
 import "./globals.css";
 
@@ -45,7 +48,17 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  /**
+   * Recover the wallet connection from the request cookie.
+   *
+   * Without this the server renders every page as disconnected and the browser only reconnects after
+   * mount, so a refresh or a navigation flashes the "Connect wallet" screen before snapping back —
+   * which reads as "I have to connect again" even though nothing was actually lost. Handing the
+   * server the real state makes the first paint correct.
+   */
+  const initialState = cookieToInitialState(ssrConfig, (await headers()).get("cookie"));
+
   return (
     <html lang="en" className={inter.variable}>
       <body>
@@ -56,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <Providers>{children}</Providers>
+        <Providers initialState={initialState}>{children}</Providers>
       </body>
     </html>
   );

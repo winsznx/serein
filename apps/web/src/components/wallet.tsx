@@ -1,199 +1,99 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain } from "wagmi";
+import { ConnectButton as RainbowConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount, useChainId, useSwitchChain } from "wagmi";
 
 import { Button, cn } from "@/components/ui";
 import { CHAIN, CHAIN_ID } from "@/lib/chain";
-import { truncateAddress } from "@/lib/format";
 
 /**
- * Wallet connection, built rather than dropped in.
+ * Wallet connection.
  *
- * An off-the-shelf modal would arrive with its own type scale, its own radii, and its own accent
- * colour, and would be the one part of the product that looks like it came from somewhere else.
- * Building it is also what makes the failure states legible: "no wallet installed", "you declined",
- * and "wrong network" are three different situations with three different next actions, and a
- * generic modal collapses them into one spinner.
+ * RainbowKit owns the modal, so someone with Rabby, Trust, Coinbase or a phone can use what they
+ * already have. Serein owns the button, so the entry point still matches the rest of the product —
+ * `ConnectButton.Custom` is the seam that allows both.
+ *
+ * The state this component most has to get right is the one between page load and a restored
+ * session. wagmi reports `reconnecting` there, and rendering "Connect wallet" during it is what makes
+ * a returning user think they were logged out.
  */
 
+export interface WalletStatus {
+  address: `0x${string}` | undefined;
+  isConnected: boolean;
+  /** True while wagmi is restoring a session. Not the same as disconnected. */
+  isRestoring: boolean;
+  /** Only true once wagmi has settled and there really is no wallet. */
+  isDisconnected: boolean;
+}
+
+export function useWalletStatus(): WalletStatus {
+  const { address, status } = useAccount();
+  const isRestoring = status === "connecting" || status === "reconnecting";
+  return {
+    address,
+    isConnected: status === "connected" && Boolean(address),
+    isRestoring,
+    isDisconnected: status === "disconnected",
+  };
+}
+
 export function ConnectButton({ tone = "violet" }: { tone?: "violet" | "light" | "dark" }) {
-  const { address, isConnected } = useAccount();
-  const { connectors, connect, isPending, error } = useConnect();
-  const { disconnect } = useDisconnect();
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
-  // Reading `window` during render would be a hydration bug: the server always sees "no window" and
-  // renders the connect button, while a wallet-less browser renders a different element — React
-  // reports that as an opaque minified mismatch on every app page. `useSyncExternalStore` gives the
-  // server and the first client render the same answer, and only then switches. It must sit above
-  // every early return so the hook order is stable.
-  const hasInjectedProvider = useSyncExternalStore(
-    subscribeToNothing,
-    () => "ethereum" in window,
-    () => true, // server snapshot: assume a provider, matching the optimistic first render
-  );
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: MouseEvent): void => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        !triggerRef.current?.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === "Escape") {
-        setOpen(false);
-        // Focus goes back where it came from, so keyboard users are not dropped at the top.
-        triggerRef.current?.focus();
-      }
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
-  if (isConnected && address) {
-    return (
-      <div className="relative">
-        <Button
-          ref={triggerRef}
-          tone={tone}
-          onClick={() => setOpen((value) => !value)}
-          aria-expanded={open}
-          aria-haspopup="menu"
-        >
-          <span className="tabular">{truncateAddress(address)}</span>
-        </Button>
-        {open ? (
-          <div
-            ref={menuRef}
-            role="menu"
-            className="absolute right-0 z-50 mt-2 w-56 rounded-card border border-white/12 bg-abyss p-2 shadow-[0_6px_20px_rgba(0,0,0,0.35)]"
-          >
-            <p className="truncate-hex px-3 py-2 text-caption text-white/55">{address}</p>
-            <button
-              role="menuitem"
-              type="button"
-              onClick={() => {
-                void navigator.clipboard?.writeText(address);
-                setOpen(false);
-              }}
-              className="w-full rounded-badge px-3 py-2 text-left text-small text-white/85 hover:bg-white/10"
-            >
-              Copy address
-            </button>
-            <button
-              role="menuitem"
-              type="button"
-              onClick={() => {
-                disconnect();
-                setOpen(false);
-              }}
-              className="w-full rounded-badge px-3 py-2 text-left text-small text-white/85 hover:bg-white/10"
-            >
-              Disconnect
-            </button>
-          </div>
-        ) : null}
-      </div>
-    );
-  }
-
-  const injectedConnector = connectors.find((connector) => connector.id === "injected");
-  const others = connectors.filter((connector) => connector.id !== "injected");
-
-  // A browser with no injected provider and no WalletConnect has nothing to connect to. Saying so
-  // beats a button that opens a menu with nothing in it.
-  const hasNothing = others.length === 0 && !hasInjectedProvider;
-
-  if (hasNothing) {
-    return (
-      <a
-        href="https://ethereum.org/en/wallets/find-wallet/"
-        target="_blank"
-        rel="noreferrer noopener"
-        className="inline-flex min-h-11 items-center justify-center rounded-pill border border-white/25 px-5 text-small font-medium text-white hover:bg-white/10"
-      >
-        Get a wallet
-      </a>
-    );
-  }
-
   return (
-    <div className="relative">
-      <Button
-        ref={triggerRef}
-        tone={tone}
-        onClick={() => {
-          if (others.length === 0 && injectedConnector) {
-            connect({ connector: injectedConnector });
-            return;
-          }
-          setOpen((value) => !value);
-        }}
-        disabled={isPending}
-        aria-expanded={others.length > 0 ? open : undefined}
-        aria-haspopup={others.length > 0 ? "menu" : undefined}
-      >
-        {isPending ? "Check your wallet…" : "Connect wallet"}
-      </Button>
+    <RainbowConnectButton.Custom>
+      {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
+        // RainbowKit reports `mounted: false` until it has settled on the client. Rendering the
+        // connect prompt during that window is exactly the flash this component exists to avoid, so
+        // it renders a placeholder of the same size instead — no layout shift, no wrong message.
+        if (!mounted) {
+          return (
+            <div
+              aria-hidden="true"
+              data-testid="wallet-restoring"
+              className="min-h-11 w-36 rounded-pill bg-white/[0.06]"
+            />
+          );
+        }
 
-      {open && others.length > 0 ? (
-        <div
-          ref={menuRef}
-          role="menu"
-          className="absolute right-0 z-50 mt-2 w-56 rounded-card border border-white/12 bg-abyss p-2 shadow-[0_6px_20px_rgba(0,0,0,0.35)]"
-        >
-          {connectors.map((connector) => (
-            <button
-              key={connector.uid}
-              role="menuitem"
-              type="button"
-              onClick={() => {
-                connect({ connector });
-                setOpen(false);
-              }}
-              className="w-full rounded-badge px-3 py-2 text-left text-small text-white/85 hover:bg-white/10"
-            >
-              {connector.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
+        if (!account || !chain) {
+          return (
+            <Button tone={tone} onClick={openConnectModal}>
+              Connect wallet
+            </Button>
+          );
+        }
 
-      {error ? (
-        <p role="alert" className="absolute right-0 mt-2 w-64 text-caption text-white/70">
-          {/^user rejected/i.test(error.message)
-            ? "You declined the connection. Nothing was shared."
-            : error.message}
-        </p>
-      ) : null}
-    </div>
+        if (chain.unsupported) {
+          return (
+            <Button tone={tone} onClick={openChainModal}>
+              Wrong network
+            </Button>
+          );
+        }
+
+        return (
+          <Button tone={tone} onClick={openAccountModal}>
+            <span className="tabular">{account.displayName}</span>
+          </Button>
+        );
+      }}
+    </RainbowConnectButton.Custom>
   );
 }
 
 /**
  * The wrong-network state, handled as a first-class screen rather than a silent failure.
  *
- * Every write in this app targets Sepolia. A wallet pointed elsewhere would produce a confusing
- * revert at signing time, so the app blocks the action and offers the one-tap fix instead.
+ * Every write targets Sepolia. A wallet pointed elsewhere would produce a confusing revert at
+ * signing time, so the action is blocked and the one-tap fix offered instead. Nothing is rendered
+ * while the session is still being restored, because a half-restored wallet has no meaningful chain.
  */
 export function NetworkGuard({ children }: { children: React.ReactNode }) {
-  const { isConnected } = useAccount();
+  const { isConnected, isRestoring } = useWalletStatus();
   const chainId = useChainId();
   const { switchChain, isPending, error } = useSwitchChain();
 
-  if (!isConnected || chainId === CHAIN_ID) return <>{children}</>;
+  if (isRestoring || !isConnected || chainId === CHAIN_ID) return <>{children}</>;
 
   return (
     <div className="rounded-card border border-violet/40 bg-violet/10 p-6">
@@ -226,13 +126,4 @@ export function TestnetNotice({ className }: { className?: string }) {
       audited.
     </p>
   );
-}
-
-/**
- * The injected-provider check has no change events worth subscribing to — an extension that appears
- * after load will be picked up on the next navigation. This satisfies `useSyncExternalStore`'s
- * contract without pretending otherwise.
- */
-function subscribeToNothing(): () => void {
-  return () => {};
 }

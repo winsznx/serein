@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useAccount, useSignTypedData } from "wagmi";
+import { useSignTypedData } from "wagmi";
 
 import { DrawCountdown, DrawProgress, DrawStatusPill } from "@/components/draw-progress";
 import { PrivateValue, useRevealState } from "@/components/private-value";
 import { Badge, ButtonLink, Card, DataRow, StatusPill } from "@/components/ui";
-import { ConnectButton, TestnetNotice } from "@/components/wallet";
+import { ConnectButton, TestnetNotice, useWalletStatus } from "@/components/wallet";
 import { deployment } from "@/lib/chain";
 import { revealValue } from "@/lib/fhe/reveal";
 import { formatTokenAmount, PRIVATE_TOKEN_SYMBOL, TOKEN_SYMBOL } from "@/lib/format";
@@ -28,7 +28,7 @@ import { DRAW_STATUS, DrawStatus } from "@serein/protocol-sdk";
  * avoid that is to give the screen one subject.
  */
 export default function AppHome() {
-  const { isConnected, address } = useAccount();
+  const { address, isConnected, isRestoring } = useWalletStatus();
   const state = useDeployment();
   const pool = usePoolSnapshot();
   const wallet = useWalletSnapshot();
@@ -36,6 +36,9 @@ export default function AppHome() {
   const [revealState, reveal] = useRevealState();
 
   if (!state.ready) return <NotDeployed />;
+  // Restoring is not the same as disconnected. Showing the connect prompt here is what made a
+  // refresh look like a logout.
+  if (isRestoring) return <RestoringSession />;
   if (!isConnected || !address) return <Disconnected />;
 
   const draw = pool.draw;
@@ -288,6 +291,15 @@ function OnboardingBanner({ step }: { step: OnboardingStep }) {
         </ButtonLink>
       </div>
     </Card>
+  );
+}
+
+function RestoringSession() {
+  return (
+    <div className="mx-auto max-w-xl space-y-4 py-12 text-center" aria-live="polite">
+      <div className="mx-auto h-8 w-48 animate-pulse rounded-pill bg-white/[0.06]" />
+      <p className="text-small text-white/50">Restoring your session…</p>
+    </div>
   );
 }
 

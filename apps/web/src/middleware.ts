@@ -3,7 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Content-Security-Policy, issued per request with a fresh nonce.
  *
- * This has to be middleware rather than a static header. Next.js streams the RSC payload through
+ * Deliberately still `middleware.ts`, not Next 16's newer `proxy` convention. `proxy` runs only on
+ * the Node runtime, and OpenNext on Cloudflare Workers rejects Node middleware outright — the build
+ * fails with "Node.js middleware is not currently supported", and forcing `runtime: "edge"` fails
+ * with "Proxy does not support Edge runtime". `middleware` runs on Edge and works. The build will
+ * print a deprecation warning; that is the correct trade until OpenNext supports the new convention.
+ *
+ * This has to run per request rather than be a static header. Next.js streams the RSC payload through
  * inline `<script>` tags, so a policy of `script-src 'self'` with no nonce blocks its own hydration:
  * React never mounts, every client component stays on its server-rendered fallback, and no chain read
  * ever fires. The page looks fine — it is just permanently inert. That failure is silent unless

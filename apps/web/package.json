@@ -19,6 +19,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.11",
     "@serein/protocol-sdk": "workspace:*",
     "@tanstack/react-query": "^5.90.2",
     "@zama-fhe/relayer-sdk": "0.4.4",
@@ -35,6 +36,9 @@
     "@types/node": "^22.10.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@x402/core": "^2.23.0",
+    "@x402/evm": "^2.23.0",
+    "@x402/svm": "^2.23.0",
     "eslint": "^9.20.0",
     "eslint-config-next": "16.3.2",
     "tailwindcss": "^4.3.3",

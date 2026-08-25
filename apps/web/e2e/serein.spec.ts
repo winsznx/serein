@@ -217,3 +217,97 @@ test.describe("rpc proxy", () => {
     expect(body.error?.message).toMatch(/read-only/i);
   });
 });
+
+/**
+ * Wallet session persistence.
+ *
+ * The bug these guard against: with `localStorage` and no SSR state, the server renders every page
+ * logged-out and the browser only reconnects after mount, so a refresh flashes "Connect wallet" and
+ * a returning user concludes they were disconnected. Nothing was lost — but the product said it was.
+ *
+ * A minimal EIP-1193 provider is injected so there is something to connect to. Signing is never
+ * exercised here; the contract suite and the live campaign cover that with real keys.
+ */
+test.describe("wallet session", () => {
+  const ACCOUNT = "0xDc4CF937848129047de43AA5Ff8adb4620dB7B07";
+
+  const INJECTED_PROVIDER = `
+    window.ethereum = {
+      isMetaMask: true,
+      isConnected: () => true,
+      request: async ({ method }) => {
+        if (method === "eth_requestAccounts" || method === "eth_accounts") return ["${ACCOUNT}"];
+        if (method === "eth_chainId") return "0xaa36a7";
+        if (method === "net_version") return "11155111";
+        return null;
+      },
+      on: () => {},
+      removeListener: () => {},
+    };`;
+
+  test("offers a choice of wallets rather than assuming MetaMask", async ({ page }) => {
+    await page.goto("/app");
+
+    const connect = page.locator("header").getByText("Connect wallet");
+    await connect.waitFor({ timeout: 30_000 });
+    await connect.click();
+
+    // RainbowKit renders a centred dialog on desktop and a bottom sheet on touch viewports, so the
+    // assertion is on the content rather than on the chrome around it.
+    await expect(page.getByText(/Connect a Wallet|Get a Wallet/i).first()).toBeVisible({
+      timeout: 20_000,
+    });
+
+    // Several options, so a Rabby or Rainbow user is not stuck being told to install MetaMask.
+    // Counted rather than named, because RainbowKit orders the list by what is actually installed.
+    const offered = await page
+      .getByText(/MetaMask|Rabby|Rainbow|Coinbase|Browser Wallet|Phantom|OKX|Zerion|Safe/)
+      .count();
+    expect(offered, "wallet chooser should offer several wallets").toBeGreaterThanOrEqual(3);
+  });
+
+  test("keeps the connection across navigation and a full reload", async ({ page, context }) => {
+    await context.addInitScript(INJECTED_PROVIDER);
+
+    const connectedLabel = page.locator("header").getByText(/0x[0-9a-fA-F]{2}/);
+
+    await page.goto("/app");
+    await expect(connectedLabel).toBeVisible({ timeout: 30_000 });
+
+    // Client-side navigation. The desktop nav is hidden below md and the bottom nav carries the same
+    // links there, so this deliberately does not scope to the header.
+    await page.getByRole("link", { name: "Draws", exact: true }).first().click();
+    await page.waitForURL(/\/app\/draws/, { timeout: 20_000 });
+    await expect(connectedLabel).toBeVisible({ timeout: 20_000 });
+
+    // Full reload — the case that used to look like a logout.
+    await page.reload();
+    await expect(connectedLabel).toBeVisible({ timeout: 30_000 });
+
+    // A fresh document load of a different route.
+    await page.goto("/app/save");
+    await expect(connectedLabel).toBeVisible({ timeout: 30_000 });
+
+    // And the state really is in a cookie, so the server can render it too.
+    const cookies = await context.cookies();
+    expect(cookies.some((cookie) => cookie.name.includes("wagmi"))).toBe(true);
+  });
+
+  test("never shows the connect prompt while a session is being restored", async ({
+    page,
+    context,
+  }) => {
+    await context.addInitScript(INJECTED_PROVIDER);
+    await page.goto("/app");
+
+    // Sample the header repeatedly through the restore window. "Connect wallet" must never appear
+    // for a browser that does in fact have a connected wallet.
+    for (let i = 0; i < 12; i++) {
+      const header = (await page.textContent("header")) ?? "";
+      expect(header, `showed the connect prompt ${i * 250}ms into restoring`).not.toContain(
+        "Connect wallet",
+      );
+      await page.waitForTimeout(250);
+    }
+  });
+});

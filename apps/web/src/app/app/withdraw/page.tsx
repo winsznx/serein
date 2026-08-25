@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount, useSignTypedData, useWriteContract } from "wagmi";
+import { useSignTypedData, useWriteContract } from "wagmi";
 
 import { PrivateValue, useRevealState } from "@/components/private-value";
 import { TxStatus } from "@/components/tx-status";
 import { Button, ButtonLink, Card } from "@/components/ui";
-import { ConnectButton, TestnetNotice } from "@/components/wallet";
+import { ConnectButton, TestnetNotice, useWalletStatus } from "@/components/wallet";
 import { deployment } from "@/lib/chain";
 import { revealValue } from "@/lib/fhe/reveal";
 import { getFheInstance, toHex } from "@/lib/fhe/sdk";
@@ -31,7 +31,7 @@ import { DRAW_STATUS, DrawStatus } from "@serein/protocol-sdk";
  * getting the number right, never a requirement.
  */
 export default function WithdrawPage() {
-  const { isConnected, address } = useAccount();
+  const { address, isConnected, isRestoring } = useWalletStatus();
   const state = useDeployment();
   const wallet = useWalletSnapshot();
   const pool = usePoolSnapshot();
@@ -45,6 +45,14 @@ export default function WithdrawPage() {
     return (
       <p className="py-12 text-center text-body text-white/60">
         Serein has no deployment on this chain yet.
+      </p>
+    );
+  }
+
+  if (isRestoring) {
+    return (
+      <p className="py-12 text-center text-body text-white/50" aria-live="polite">
+        Restoring your session…
       </p>
     );
   }

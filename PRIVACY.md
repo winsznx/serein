@@ -71,6 +71,12 @@ savers, and pretending otherwise would be the exact failure the product exists t
   calls are to the chain, the Zama relayer, and the app's own read-only RPC proxy.
 - **The RPC proxy sees no secrets.** It forwards read methods only, never signs, and refuses
   `eth_sendRawTransaction` — wallets broadcast their own transactions.
+- **One cookie, and what is in it.** Wallet connection state is kept in a `wagmi.store` cookie so a
+  refresh does not look like a logout. It holds the connected address, the chain id and which
+  connector was used — no keys, no signatures, nothing decrypted. Because it is a cookie rather than
+  `localStorage`, that address is sent to the Serein server on every request. It is public
+  information and the RPC proxy already sees queries about it, but it is a real change in what the
+  server observes and it is listed here rather than left for someone to discover in devtools.
 
 ---
 
