@@ -67,20 +67,48 @@ deployed bytecode. `SereinPool` has no owner, no admin function, and no upgrade 
 
 ## Observed on live Sepolia
 
-|                                | Draw #1                     | Draw #2                     | Draw #3                      |
-| ------------------------------ | --------------------------- | --------------------------- | ---------------------------- |
-| Participants                   | 3 registered, 0 with weight | 3                           | 3                            |
-| Aggregate weight               | `0`                         | `243,000,000,000`           | `360,000,000,000`            |
-| Randomness bound               | —                           | `2^38`                      | `2^39`                       |
-| Candidates drawn               | —                           | 1                           | 1                            |
-| Winner                         | none (zero-weight path)     | participant-c, on 9.9% odds | participant-b, on 62.5% odds |
-| Principal conserved            | —                           | all 3                       | all 3                        |
-| Confidentiality probes refused | —                           | 4 of 4                      | 4 of 4                       |
-| Wall-clock                     | —                           | 82s                         | 112s                         |
+|                                | Draw #1                 | Draw #2           | Draw #3           | Draw #4           | Draw #5             |
+| ------------------------------ | ----------------------- | ----------------- | ----------------- | ----------------- | ------------------- |
+| Registered participants        | 3 (none with weight)    | 3                 | 3                 | 3                 | **6**               |
+| Aggregate weight               | `0`                     | `243,000,000,000` | `360,000,000,000` | `360,000,000,000` | `1,105,500,000,000` |
+| Randomness bound               | —                       | `2^38`            | `2^39`            | `2^39`            | `2^41`              |
+| Acceptance probability         | —                       | 88.4%             | 65.5%             | 65.5%             | **50.3%**           |
+| Candidates drawn               | —                       | 1                 | 1                 | 1                 | **4 (3 rejected)**  |
+| Selection batches              | —                       | 1                 | 1                 | 1                 | **2**               |
+| Winner                         | none (zero-weight path) | participant-c     | participant-b     | participant-b     | participant-b       |
+| Principal conserved            | —                       | all 3             | all 3             | all 3             | **all 6**           |
+| Confidentiality probes refused | —                       | 4 of 4            | 4 of 4            | 4 of 4            | 4 of 4              |
 
-Both non-zero aggregates match the value derived by hand from the deposit timestamps, to the unit.
-Draw #1 exercised the zero-weight path: all three deposits landed 120 seconds _after_ its window
+Every non-zero aggregate matches the value derived from the public deposit timestamps, to the unit.
+`scripts/verify-aggregate.ts` recomputes any draw's total from the observation series and compares.
+
+**Draw #1** exercised the zero-weight path: all three deposits landed 120 seconds _after_ its window
 closed, so the protocol verified the aggregate as zero and finalized with no winner.
+
+**Draw #4** demonstrates the frozen-weight invariant. Participant A had withdrawn everything and held
+zero principal when results were claimed, yet was a full participant with 25% odds — their withdrawal
+landed after the epoch closed. A later withdrawal cannot reduce an entry already earned.
+
+**Draw #5** is the strongest artifact. Its total landed just above `2^40`, so the bound was `2^41` and
+acceptance was **50.3%** — the theoretical worst case for rejection sampling, which produced three
+rejected candidates before one was accepted. Six participants at a batch size of five forced the
+selection walk across two transactions, exercising the stored cursor on chain rather than only in
+tests. And the aggregate decomposes as:
+
+```
+A: 100 × 228s + 75 × 36s  =    25,500,000,000   partial withdrawal, then full exit, mid-epoch
+B: 250 × 3600s            =   900,000,000,000
+C:  50 × 3600s            =   180,000,000,000
+D, E, F                   =                 0   registered, but deposited after the window closed
+                             -----------------
+                published =  1,105,500,000,000
+```
+
+A's figure is the piecewise integral across two balance changes _inside_ the epoch — not
+`final_balance × epoch` (which gives 0) nor `initial_balance × epoch` (which gives 360,000,000,000).
+The encrypted TWAB is integrating correctly, not merely plausibly. D, E and F were frozen into the
+draw with zero weight and none could win. All six claims cost 399,406–399,410 gas: indistinguishable,
+which is what keeps claiming from disclosing the outcome.
 
 Raw artifacts, including every transaction hash: [`evidence/live/draws/`](evidence/live/draws/).
 

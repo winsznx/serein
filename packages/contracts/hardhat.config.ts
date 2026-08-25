@@ -22,7 +22,7 @@ const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL ?? "";
  *
  *   0 deployer — deploys, funds the prize source, and nothing else
  *   1 keeper   — progresses draws; holds no privilege the public does not also have
- *   2..4       — ephemeral participants used only for the live proof campaign
+ *   2..7       — ephemeral participants used only for the live proof campaign
  *
  * Scripts index by position, so reordering this list changes who does what.
  */
@@ -32,6 +32,9 @@ const sepoliaAccounts = [
   process.env.PARTICIPANT_A_PRIVATE_KEY,
   process.env.PARTICIPANT_B_PRIVATE_KEY,
   process.env.PARTICIPANT_C_PRIVATE_KEY,
+  process.env.PARTICIPANT_D_PRIVATE_KEY,
+  process.env.PARTICIPANT_E_PRIVATE_KEY,
+  process.env.PARTICIPANT_F_PRIVATE_KEY,
 ].filter(
   (key): key is string => typeof key === "string" && key.length === 66 && key.startsWith("0x"),
 );

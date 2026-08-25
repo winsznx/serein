@@ -79,9 +79,9 @@ async function main(): Promise<void> {
   await initFhevm(fhevm, { requireLive: true });
 
   const signers = await ethers.getSigners();
-  const [deployer, keeper, alice, bob, carol] = signers;
+  const [deployer, keeper, alice, bob, carol, dave, erin, frank] = signers;
   if (!deployer || !keeper || !alice || !bob || !carol) {
-    throw new Error("need deployer, keeper and three participant signers");
+    throw new Error("need deployer, keeper and at least three participant signers");
   }
 
   const poolAddress = addressOf(manifest, "SereinPool");
@@ -108,10 +108,24 @@ async function main(): Promise<void> {
     underlyingAddress,
   )) as unknown as TestUSDC;
 
+  /**
+   * Deliberately uneven stakes across six savers.
+   *
+   * Six matters for two reasons. It puts the pool past the point where the published aggregate
+   * meaningfully narrows any individual's position, and at a batch size of five it forces the
+   * selection walk across **two** batches — exercising the stored cursor on live chain rather than
+   * only in tests.
+   *
+   * The spread (10x between smallest and largest) is what makes a winner informative: if the largest
+   * stake won every draw, that would be indistinguishable from a broken weighting.
+   */
   const roster: { role: string; signer: HardhatEthersSigner; amount: bigint }[] = [
     { role: "participant-a", signer: alice, amount: 100n * UNIT },
     { role: "participant-b", signer: bob, amount: 250n * UNIT },
     { role: "participant-c", signer: carol, amount: 50n * UNIT },
+    ...(dave ? [{ role: "participant-d", signer: dave, amount: 500n * UNIT }] : []),
+    ...(erin ? [{ role: "participant-e", signer: erin, amount: 75n * UNIT }] : []),
+    ...(frank ? [{ role: "participant-f", signer: frank, amount: 300n * UNIT }] : []),
   ];
 
   const steps: StepLog[] = [];
@@ -150,7 +164,16 @@ async function main(): Promise<void> {
     gasTotals: {},
   };
 
-  const drawId = await pool.currentDrawId();
+  /**
+   * Which draw to work on.
+   *
+   * Defaults to the open one. `SEREIN_DRAW_ID` targets a specific draw, which is what makes a run
+   * that died partway through recoverable — gas ran out mid-claims once, and without this the only
+   * way back was to start a fresh draw and lose the artifact for the one already finished.
+   */
+  const drawId = process.env.SEREIN_DRAW_ID
+    ? BigInt(process.env.SEREIN_DRAW_ID)
+    : await pool.currentDrawId();
   console.log(`\n=== Serein live proof — draw #${drawId} on ${manifest.network} ===\n`);
 
   // ---------------------------------------------------------------------------------------------
@@ -276,17 +299,23 @@ async function main(): Promise<void> {
   const drawStarted = Date.now();
 
   const openDraw = await pool.getDraw(drawId);
-  const now = Math.floor(Date.now() / 1000);
-  const remaining = Number(openDraw.endTimestamp) - now;
-  if (remaining > 0) {
-    console.log(`   waiting ${remaining}s for draw #${drawId} to reach its scheduled end…`);
-    await new Promise((done) => setTimeout(done, (remaining + 5) * 1000));
-  }
+  const alreadyClosed = openDraw.status !== 1n; // 1 = Open
 
-  await closeIfDue(pool, keeper, {
-    log: (message) => console.log(message),
-    onStep: (entry) => steps.push(entry),
-  });
+  if (alreadyClosed) {
+    console.log(`   draw #${drawId} is already past Open; advancing from where it stands`);
+  } else {
+    const now = Math.floor(Date.now() / 1000);
+    const remaining = Number(openDraw.endTimestamp) - now;
+    if (remaining > 0) {
+      console.log(`   waiting ${remaining}s for draw #${drawId} to reach its scheduled end…`);
+      await new Promise((done) => setTimeout(done, (remaining + 5) * 1000));
+    }
+
+    await closeIfDue(pool, keeper, {
+      log: (message) => console.log(message),
+      onStep: (entry) => steps.push(entry),
+    });
+  }
 
   const { rejections } = await advanceDraw(pool, keeper, drawId, {
     batchSize: 5,
