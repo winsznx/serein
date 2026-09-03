@@ -1,0 +1,51 @@
+name: Keeper
+
+# Runs the same permissionless keeper CLI documented in DECISIONS.md ("A CLI keeper, not a
+# scheduled Worker") on a schedule, so the live draw does not go stale while a judge is looking at
+# it. This changes nothing about the trust model: every function it calls is callable by anyone,
+# the key cannot move principal, influence a winner, or decrypt anything private. If this workflow
+# stops running, draws just run late — nothing is lost or locked. See DECISIONS.md for why the
+# keeper itself is a Node CLI rather than a Cloudflare scheduled Worker (the Zama relayer SDK's
+# node/web builds are not known to run in workerd, and an untested scheduled Worker would silently
+# never fire).
+on:
+  schedule:
+    # Every 5 minutes. Draws run 15 minutes (SEREIN_DRAW_DURATION), so this keeps at least two
+    # keeper passes inside every draw window even if one run is skipped or delayed by GitHub's
+    # scheduler (which does not guarantee exact timing).
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: serein-keeper
+  cancel-in-progress: false
+
+jobs:
+  keeper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run one keeper pass
+        working-directory: packages/contracts
+        env:
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+          # hardhat.config.ts builds the Sepolia account list in a fixed order and filters out
+          # unset keys — the deployer key must be present too, or the keeper key would shift into
+          # index 0 and the keeper would sign as "deployer" instead of "keeper" (harmless given the
+          # deployer holds no special privilege either, but the log labels would lie).
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          KEEPER_PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+          SEREIN_BATCH_SIZE: "5"
+        run: pnpm hardhat run scripts/keeper.ts --network sepolia -- --once

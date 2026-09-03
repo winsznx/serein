@@ -45,7 +45,7 @@ const WALLETCONNECT_ORIGINS = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
     ]
   : [];
 
-function buildCsp(nonce: string): string {
+function buildCsp(nonce: string, isSecureRequest: boolean): string {
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
     "script-src": [
@@ -69,8 +69,20 @@ function buildCsp(nonce: string): string {
     "form-action": ["'self'"],
     "object-src": ["'none'"],
     "manifest-src": ["'self'"],
-    "upgrade-insecure-requests": [],
   };
+
+  // Only meaningful, and only added, when the page itself was already served over https: the
+  // directive upgrades any accidental http:// subresource reference to https, which matters for a
+  // real deployment (always https) but not for a page already served over plain http. Chromium's
+  // mobile device emulation applies it to *every* subresource fetch — including the app's own
+  // same-origin JS and CSS chunks — rather than just cross-origin ones, so on a local or E2E server
+  // that never terminates TLS this silently turned every mobile-viewport page into unstyled,
+  // unhydrated HTML: no failed request, no console error a casual look would catch, just a page that
+  // rendered like the stylesheet had never loaded. Gating on the incoming scheme keeps the directive
+  // in production, where it belongs, without breaking local http testing.
+  if (isSecureRequest) {
+    directives["upgrade-insecure-requests"] = [];
+  }
 
   return Object.entries(directives)
     .map(([directive, values]) =>
@@ -81,7 +93,13 @@ function buildCsp(nonce: string): string {
 
 export function middleware(request: NextRequest): NextResponse {
   const nonce = crypto.randomUUID().replace(/-/g, "");
-  const csp = buildCsp(nonce);
+  // Cloudflare terminates TLS in front of the Worker, so the request Next sees is already
+  // plain HTTP with `x-forwarded-proto: https` recording what the visitor actually used. Falling
+  // back to the request's own scheme covers `next start` and the Playwright webServer, neither of
+  // which sits behind a proxy.
+  const isSecureRequest =
+    request.headers.get("x-forwarded-proto") === "https" || request.nextUrl.protocol === "https:";
+  const csp = buildCsp(nonce, isSecureRequest);
 
   // Next reads `x-nonce` to stamp its own script tags.
   const requestHeaders = new Headers(request.headers);

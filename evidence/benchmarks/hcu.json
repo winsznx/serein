@@ -18,7 +18,7 @@
       "operation": "addSavings (subsequent)",
       "globalHCU": 4158224,
       "sequentialHCU": 1111000,
-      "evmGas": "1175933",
+      "evmGas": "1175909",
       "globalHeadroomPercent": 79.21,
       "sequentialHeadroomPercent": 77.78
     },
@@ -26,7 +26,7 @@
       "operation": "takeOutSavings",
       "globalHCU": 3039096,
       "sequentialHCU": 955032,
-      "evmGas": "792086",
+      "evmGas": "792062",
       "globalHeadroomPercent": 84.8,
       "sequentialHeadroomPercent": 80.9
     },

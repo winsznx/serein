@@ -27,7 +27,10 @@ export default function ProofDrawPage({ params }: { params: Promise<{ drawId: st
   const state = useDeployment();
   const { draw, isLoading } = useDraw(queryId);
   const { handles } = useDrawHandles(queryId);
-  const transcript = useDrawTranscript(queryId);
+  const transcript = useDrawTranscript(
+    queryId,
+    draw ? { startTimestamp: draw.startTimestamp, endTimestamp: draw.endTimestamp } : undefined,
+  );
 
   if (!state.ready) {
     return <p className="py-12 text-center text-body text-white/60">No deployment to verify.</p>;

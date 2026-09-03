@@ -7,7 +7,7 @@ still exactly weighted. Savers deposit a confidential token, earn draw weight pr
 much they held and for how long, and can withdraw their principal at any time — including in the
 middle of a draw.
 
-Across two live Sepolia draws and 10,000 deterministic scenarios, principal conservation held for
+Across six live Sepolia draws and 10,000 deterministic scenarios, principal conservation held for
 every participant, the encrypted time-weighted balances matched the plaintext reference model
 observation by observation, and every attempt to decrypt a value that should be private was refused.
 

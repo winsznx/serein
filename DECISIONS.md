@@ -283,4 +283,29 @@ What makes this acceptable is that the keeper is not load-bearing. Every progres
 permissionless, so a draw can be advanced from a CLI, from CI, or from a browser. If nobody runs one,
 draws are late; nothing is lost and nothing is locked.
 
+A `.github/workflows/keeper.yml` GitHub Actions cron now runs the same `--once` CLI pass every five
+minutes, so the live app does not present a stale draw during judging. This is a scheduling
+convenience layered on top of the same permissionless functions, not a new trust assumption — anyone
+could stand up the identical cron against their own key, or just call the contract directly.
+
+## `eth_getLogs`, and the block-range cap a free RPC tier imposes
+
+The proof view's transcript reconstructs a draw's transaction history from event logs rather than a
+database, so a reader can take any hash it shows and check it independently on Etherscan. The first
+version of that query scanned from the contract's deployment block to `latest` — tens of thousands of
+blocks. Alchemy's free tier, which the deployed Worker runs on, rejects any `eth_getLogs` call whose
+range exceeds ten blocks, and that rejection was being swallowed by a `.catch(() => [])` per call. The
+result: every draw's transcript loaded successfully and simply had nothing in it, silently, since the
+app was first deployed.
+
+The fix estimates a draw's block range from its own `startTimestamp`/`endTimestamp` — Sepolia averages
+roughly 12.4s/block — and walks that narrow range in ten-block windows, a couple in flight at a time
+so a rate-limited endpoint does not itself start rejecting the batch. The first attempt at the
+estimate had a second bug worth naming: it computed a whole-number "seconds per block" and multiplied
+that back out, and truncating 12.4 down to 12 across a 69,000-block span turned a 3% rounding error
+into a drift of roughly 2,500 blocks — enough to land the window past the draw's own closing
+transaction. The corrected version interpolates directly (one division, at the end, not a rate
+computed first and reapplied), which brought the error for a real historical draw down from thousands
+of blocks to under fifty.
+
 Running the SDK under `workerd` is a genuine open question, not a closed one. It is listed as such.
