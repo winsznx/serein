@@ -65,9 +65,30 @@ declare global {
   }
 }
 
-/** wagmi already declares `window.ethereum`; read it without redeclaring the global. */
-function injectedProvider(): unknown {
-  return (window as unknown as { ethereum?: unknown }).ethereum;
+/**
+ * The injected provider, but only when it is actually pointed at Sepolia.
+ *
+ * A wallet's global network switcher and the chain it has permitted this site to use are not the
+ * same thing in current MetaMask: a visitor can be correctly connected to Serein on Sepolia while
+ * their wallet's own UI sits on a different chain, and `eth_chainId` against the raw injected
+ * provider follows that global switcher, not the per-site permission. Handing that provider straight
+ * to the relayer SDK then means asking a real wallet for a network it is not actually looking at —
+ * there is no FHE coprocessor on whatever chain the switcher happens to show, `createInstance` fails,
+ * and the failure surfaces as "could not reach the relayer" for a visitor whose connection to this
+ * app was never at fault. Checked once here and discarded otherwise, in favour of the app's own
+ * chain-pinned read proxy below.
+ */
+async function injectedProvider(): Promise<unknown> {
+  const ethereum = (
+    window as unknown as { ethereum?: { request: (args: { method: string }) => Promise<unknown> } }
+  ).ethereum;
+  if (!ethereum) return undefined;
+  try {
+    const chainIdHex = await ethereum.request({ method: "eth_chainId" });
+    return chainIdHex === `0x${CHAIN_ID.toString(16)}` ? ethereum : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 const SDK_SCRIPT_SRC = "/zama/relayer-sdk-js.umd.cjs";
@@ -156,9 +177,10 @@ export async function getFheInstance(): Promise<FhevmInstance> {
 
     try {
       // Prefer the wallet's own provider so the SDK reads the same chain the user is signing
-      // against; fall back to the app's read proxy so a disconnected visitor still gets a usable
-      // instance.
-      const network = injectedProvider() ?? rpcUrl();
+      // against, but only when it is genuinely on Sepolia right now; otherwise the app's own
+      // chain-pinned read proxy, so a disconnected visitor — or one whose wallet UI has wandered to
+      // another chain while still permitting this site on Sepolia — gets a usable instance either way.
+      const network = (await injectedProvider()) ?? rpcUrl();
       return await sdk.createInstance({ ...sdk.SepoliaConfig, chainId: CHAIN_ID, network });
     } catch (error) {
       instancePromise = null;
