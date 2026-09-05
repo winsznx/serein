@@ -25,7 +25,7 @@ rather than a Serein-deployed token.
 | ---------- | ------------------------------------------------------------------------------------------------- |
 | Live app   | [serein.timjosh507.workers.dev](https://serein.timjosh507.workers.dev)                            |
 | Network    | Ethereum Sepolia                                                                                  |
-| Demo video | Recording pending — it will show a winning wallet collecting an encrypted prize.                  |
+| Demo video | [Watch on YouTube](https://youtu.be/8PEZxw8nF5w)                                                   |
 | X article  | [winsznlabs/status/2096187911108427889](https://x.com/winsznlabs/status/2096187911108427889?s=20) |
 | Proof view | [Open proof view](https://serein.timjosh507.workers.dev/proof)                                    |
 | Contracts  | [Open contract documentation](https://serein.timjosh507.workers.dev/docs/contracts)               |
