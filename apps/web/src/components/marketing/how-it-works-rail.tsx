@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/components/ui";
+import { TOKEN_SYMBOL } from "@/lib/format";
 
 import { Reveal } from "./reveal";
 
@@ -23,7 +24,7 @@ function BoundaryDiagram() {
         fill="var(--color-iron)"
         fontFamily="var(--font-sans)"
       >
-        tUSDC
+        {TOKEN_SYMBOL}
       </text>
       <line
         x1="110"

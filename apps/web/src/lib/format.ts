@@ -1,7 +1,17 @@
+import { deployment } from "@/lib/chain";
+
 /** Test USDC has six decimals, like the asset it stands in for. */
 export const TOKEN_DECIMALS = 6;
-export const TOKEN_SYMBOL = "tUSDC";
-export const PRIVATE_TOKEN_SYMBOL = "ptUSDC";
+
+/**
+ * On the canonical deployment these are Zama's own registered contracts — `USDCMock` and
+ * `cUSDCMock` are their real on-chain `symbol()` values, not names Serein made up. `tUSDC`/`ptUSDC`
+ * only apply on the legacy, Serein-owned token pair, which the local test fixtures and `deploy.ts`
+ * still use. The manifest is static and bundled at build time, so this is exactly as safe as the
+ * `TOKEN_DECIMALS` constant above it — one deployment per build, decided before any of this runs.
+ */
+export const TOKEN_SYMBOL = deployment().isZamaCanonical ? "USDCMock" : "tUSDC";
+export const PRIVATE_TOKEN_SYMBOL = deployment().isZamaCanonical ? "cUSDCMock" : "ptUSDC";
 
 export function formatTokenAmount(
   raw: bigint,
