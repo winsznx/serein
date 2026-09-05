@@ -10,7 +10,8 @@ without a pitch voice.
 ## Before recording
 
 - A fresh browser profile with a wallet extension, on Sepolia, holding a little test ETH.
-- A second wallet (Wallet B) already holding savings — this is what makes step 7 land.
+- Several wallets you control already holding savings. One will win, so the recording can show a
+  real encrypted prize being revealed and collected rather than relying on luck.
 - The keeper running (`keeper:sepolia`), so a draw closes during the recording.
 - Two tabs: the app, and `/proof`.
 
@@ -78,17 +79,14 @@ Point at the bound and the attempt count.
 > Then it walks the participant list under encryption to find whose share contains that point.
 > Nobody, including the people running this, learns who won.
 
-**2:25 — Your result** _(20s)_
+**2:25 — Reveal and collect the winning result** _(20s)_
 
-Back to the draw detail. Reveal the result.
+Reveal the result for each controlled participant, then switch to the winning wallet. Show its
+encrypted prize amount and collect it.
 
-> No prize this draw — and notice the wording. My savings are exactly where I left them. Nothing was
-> lost, because nothing was ever at stake.
-
-If you won, show the amount instead. Don't celebrate; that's the point.
-
-> Everyone collects with the same button. A non-winner moves an encrypted zero, so collecting doesn't
-> tell anyone whether you won.
+> This wallet won. The prize amount was encrypted until this wallet authorized the reveal, and now it
+> can collect it. Everyone uses the same collect function; a non-winner moves an encrypted zero, so
+> claim calldata, events, and transfer amounts do not directly disclose the result.
 
 **2:45 — Take it out** _(15s)_
 

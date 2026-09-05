@@ -37,10 +37,10 @@ from a single shared source (`packages/protocol-sdk/src/protocol.ts`), so the tw
 One number per draw is published on purpose: the total draw weight, summed across every participant,
 released only after that draw's window is frozen.
 
-**Why it has to be public.** Selecting uniformly across an arbitrary total requires that total in the
-clear, and the coprocessor's bounded randomness only accepts a power-of-two ceiling. Without it the
-draw would have to approximate — scale, round, or score-and-argmax — and every one of those
-introduces bias. A prize draw with quiet bias is not a fair draw. The full argument is in
+**Why Serein makes it public.** This exact rejection-sampling construction needs a plaintext bound
+for the current power-of-two bounded FHE random primitive. Scaling, rounding, or score-and-argmax
+within this construction would introduce bias. Avoiding the disclosure would require a different
+selection construction, which Serein does not claim to implement. The full argument is in
 [ARCHITECTURE.md §3](ARCHITECTURE.md#3-exact-weighted-selection).
 
 **Why it is usually safe.** It is a sum over everyone, disclosed after the interval it covers is

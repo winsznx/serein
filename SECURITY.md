@@ -28,13 +28,15 @@ repeats four of them against the real relayer every run and aborts if any succee
 
 **Can:** everything an observer can, plus decrypt their own balance and their own result.
 
-**Cannot:** decrypt anyone else's; infer the winner from claim transactions.
+**Cannot:** decrypt anyone else's; directly learn the winner from claim calldata, events, or
+confidential transfer amounts.
 
 **Defence:** each value is granted to exactly one address. Claims are uniform: every participant
 calls the same function, a non-winner moves an encrypted zero, and the transaction, event and gas are
 indistinguishable. Live draws #2 and #3 show all three participants claiming at 399,406–399,410 gas.
 
-**Residual:** the fact that an address claimed is public. The outcome is not.
+**Residual:** the fact that an address claimed is public. User behavior can still create a
+side-channel inference when participants follow different claiming patterns.
 
 ### The keeper
 
