@@ -11,7 +11,7 @@ still exactly weighted. Savers deposit a confidential token, earn draw weight pr
 much they held and for how long, and can withdraw their principal at any time — including in the
 middle of a draw.
 
-Across nine live Sepolia draw lifecycles and 10,000 deterministic scenarios, Serein exercised the
+Across thirteen live Sepolia draw lifecycles and 10,000 deterministic scenarios, Serein exercised the
 zero-weight path, multi-transaction selection, rejection sampling near its worst-case acceptance
 rate, post-close withdrawals, and permissionless draw recovery. Principal conservation was verified
 for every measured participant, encrypted TWAB matched the plaintext reference model, and every live
@@ -195,15 +195,22 @@ Raw artifacts, including every transaction hash:
 
 The same mechanism, re-proven end to end on Zama's registered asset rather than Serein's own.
 
-|                                | #1    | #2                  | #3                                |
-| ------------------------------ | ----- | ------------------- | --------------------------------- |
-| Registered participants        | 6     | 6                   | 6                                 |
-| Aggregate weight               | `0`   | `1,406,400,000,000` | `1,147,500,000,000`               |
-| Randomness bound               | —     | `2^41`              | `2^41`                            |
-| Candidates drawn               | —     | 1 (0 rejected)      | 1 (0 rejected)                    |
-| Selection batches              | —     | 2 (5 then 1)        | **2, by two different addresses** |
-| Principal conserved            | all 6 | all 6               | —                                 |
-| Confidentiality probes refused | 4/4   | 4/4                 | —                                 |
+|                                | #1    | #2                  | #3                                | #5                  |
+| ------------------------------ | ----- | ------------------- | --------------------------------- | ------------------- |
+| Registered participants        | 6     | 6                   | 6                                 | 6                   |
+| Aggregate weight               | `0`   | `1,406,400,000,000` | `1,147,500,000,000`               | `3,374,400,000,000` |
+| Randomness bound               | —     | `2^41`              | `2^41`                            | `2^42`              |
+| Candidates drawn               | —     | 1 (0 rejected)      | 1 (0 rejected)                    | 1 (0 rejected)      |
+| Selection batches              | —     | 2 (5 then 1)        | **2, by two different addresses** | 1                   |
+| Principal conserved            | all 6 | all 6               | all 6                             | all 6               |
+| Confidentiality probes refused | 4/4   | 4/4                 | 4/4                               | 4/4                 |
+
+Draws #6 and #7 ran too — ordinary weighted draws with no new property to report, evidenced alongside
+the rest in `evidence/live/draws/`. Draw #4 finalized correctly on chain (its own aggregate matched
+independently, same as the others) but its evidence artifact was lost to a mid-run relayer timeout
+during the claims step — four participants' draw #4 results remain unclaimed as a result. Unclaimed
+results carry no time limit and no risk: `hasClaimed` stays checkable, and the funds sit in the prize
+reserve until claimed, same as any draw nobody has gotten around to collecting yet.
 
 **Draw #1** landed the zero-weight path again, for the same structural reason as the legacy deployment's
 first draw: every deposit arrived after the newly-opened epoch's window had already closed (the
@@ -224,6 +231,21 @@ address**, a participant wallet holding no operational role, read the stored cur
 remaining four. The consistency proof still verified, which it could not have done had anyone been
 skipped or walked twice — the same liveness claim proven before, now on Zama's own wrapper. Its
 aggregate, `1,147,500,000,000`, was also independently recomputed and matched exactly.
+
+**Withdrawal, over-withdrawal, and unwrap** ran between draws #4 and #5: partial withdrawal (100 → 75
+exactly), a 1000× over-withdrawal clamped to exactly 0 rather than reverting, then `unwrap()` → a live
+KMS public decryption → `finalizeUnwrap()` — the saver's plain public USDC balance increased by
+exactly the unwrapped amount. This is the full loop, out of the pool and out of confidential form
+entirely, not just a confidential-to-confidential transfer. Artifact:
+[`evidence/live/withdrawal.json`](evidence/live/withdrawal.json).
+
+**Draw #5** is the frozen-weight invariant, live, with a winner. That withdrawal landed inside draw
+#5's own window rather than after it: participant A's balance changed twice mid-epoch (100 → 75 → 0)
+and she held zero principal at claim time — yet won the draw. Her weight, `100 × 1,992s + 75 × 36s =
+201,900,000,000`, is a piecewise integral across two balance changes _inside_ the epoch, not
+`final_balance × epoch` (which gives 0) nor `initial_balance × epoch` (which gives 270,000,000,000).
+Independently recomputed from the six participants' on-chain observation timestamps and matched
+exactly: `3,374,400,000,000`.
 
 Raw artifacts: [`evidence/live/draws/`](evidence/live/draws/).
 

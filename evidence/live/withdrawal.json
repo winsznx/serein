@@ -1,0 +1,36 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "commit": "adca595df5007e575a7fbc6326bafc9179b6a5ce",
+  "recordedAt": "2026-09-05T16:06:13.146Z",
+  "saver": "0xDc4CF937848129047de43AA5Ff8adb4620dB7B07",
+  "pool": "0xF55cD82dCc73286E294bC145fe0F289A67af110b",
+  "confidentialToken": "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
+  "underlyingToken": "0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF",
+  "openingPrincipalUnits": "100000000",
+  "partialWithdrawal": {
+    "requestedUnits": "25000000",
+    "txHash": "0x10471c90d5da931b39e65d2c3df6fba7a9d2a893b68422187ad4f1675eff7bfb",
+    "gasUsed": "1018760",
+    "principalAfterUnits": "75000000",
+    "exact": true
+  },
+  "overWithdrawal": {
+    "requestedUnits": "75000000000",
+    "txHash": "0x7d0d2c7d01e7e168c1df203d560fbe3960e12aaf09f420079999965c2e14c7ac",
+    "gasUsed": "1018772",
+    "principalAfterUnits": "0",
+    "clampedNotReverted": true,
+    "note": "Asking for 1000x the remaining balance succeeded and took exactly the balance. A revert here would let anyone probe a private balance by observing which amounts fail."
+  },
+  "unwrap": {
+    "requestTxHash": "0x043370f2d8a2e7ecca985dd09b47392dfafecd294d36dce45077e7f8ae3636e0",
+    "unwrapRequestId": "0xf52c61a7305b4d630ac8b4b03b5c799500de2258d2ff0000000000aa36a70500",
+    "finalizeTxHash": "0x12e5b1963e176783bc65a93c959c038524f1c27c4c5e19e3abdbe7208929ef20",
+    "unwrappedUnits": "100000000",
+    "underlyingBalanceBeforeUnits": "0",
+    "underlyingBalanceAfterUnits": "100000000",
+    "exact": true,
+    "note": "Withdrawal from the pool returns the confidential wrapper token, not plain ERC-20 — leaving confidential form entirely is the wrapper's own async unwrap: unwrap() requests it (the wrapper itself marks the amount publicly decryptable), then finalizeUnwrap() carries a KMS-signed cleartext to complete the ERC-20 transfer. Both steps run here, and the saver's public balance increases by exactly the unwrapped amount."
+  }
+}

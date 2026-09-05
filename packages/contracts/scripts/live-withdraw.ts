@@ -4,22 +4,29 @@ import { dirname, resolve } from "node:path";
 import { FhevmType } from "@fhevm/hardhat-plugin";
 import { ethers, fhevm } from "hardhat";
 
+import { publicDecryptNumber } from "./lib/decrypt";
 import { addressOf, loadManifest } from "./lib/manifest";
 import { withRelayerRetry, initFhevm } from "./lib/relayer";
 import type { SereinPool } from "../types";
 
 /**
- * Demonstrate withdrawal on live Sepolia, including the two properties that are easy to claim and
- * hard to prove:
+ * Demonstrate withdrawal on live Sepolia, end to end — out of the pool, out of confidential form,
+ * and back to plain public USDC in the saver's own wallet.
  *
- *   1. principal comes out for exactly the amount asked, encrypted end to end;
- *   2. over-withdrawing is clamped rather than reverted, so a failed transaction can never be used
- *      as an oracle against a balance the protocol is supposed to keep private.
+ * Three properties, in order:
  *
- * The second is the interesting one. Reverting on "amount exceeds balance" would let anyone
- * binary-search someone else's balance by watching which withdrawals succeed. Serein takes whatever
- * is actually there instead, which is why the final step here asks for far more than the account
- * holds and expects to end at exactly zero.
+ *   1. Principal comes out of the pool for exactly the amount asked, encrypted end to end.
+ *   2. Over-withdrawing is clamped rather than reverted, so a failed transaction can never be used
+ *      as an oracle against a balance the protocol is supposed to keep private. Reverting on "amount
+ *      exceeds balance" would let anyone binary-search someone else's balance by watching which
+ *      withdrawals succeed; Serein takes whatever is actually there instead.
+ *   3. Leaving the pool does not mean leaving confidential form — `pool.withdraw()` returns the
+ *      confidential wrapper token, not plain ERC-20. Converting the rest of the way is the wrapper's
+ *      own two-step unwrap: `unwrap()` requests it and the wrapper itself marks the amount publicly
+ *      decryptable (nothing in Serein does that), then anyone can carry a KMS-signed cleartext into
+ *      `finalizeUnwrap()` to complete the ERC-20 transfer. This script does both steps itself so the
+ *      artifact shows the saver's plain USDC balance actually increasing, not merely a confidential
+ *      transfer that still needs converting.
  */
 async function main(): Promise<void> {
   const chainId = Number((await ethers.provider.getNetwork()).chainId);
@@ -31,7 +38,11 @@ async function main(): Promise<void> {
   if (!saver) throw new Error("need a participant signer");
 
   const poolAddress = addressOf(manifest, "SereinPool");
+  const tokenAddress = addressOf(manifest, "ConfidentialUSDC");
+  const underlyingAddress = addressOf(manifest, "TestUSDC");
   const pool = (await ethers.getContractAt("SereinPool", poolAddress)) as unknown as SereinPool;
+  const token = await ethers.getContractAt("ConfidentialUSDC", tokenAddress);
+  const underlying = await ethers.getContractAt("TestUSDC", underlyingAddress);
 
   const reveal = async (): Promise<bigint> => {
     const handle = await pool.confidentialBalanceOf(saver.address);
@@ -39,6 +50,15 @@ async function main(): Promise<void> {
     return withRelayerRetry(
       () => fhevm.userDecryptEuint(FhevmType.euint64, handle, poolAddress, saver),
       { label: "reveal principal", log: (m) => console.log(m) },
+    );
+  };
+
+  const revealWrapped = async (): Promise<bigint> => {
+    const handle = await token.confidentialBalanceOf(saver.address);
+    if (handle === ethers.ZeroHash) return 0n;
+    return withRelayerRetry(
+      () => fhevm.userDecryptEuint(FhevmType.euint64, handle, tokenAddress, saver),
+      { label: "reveal confidential balance", log: (m) => console.log(m) },
     );
   };
 
@@ -87,6 +107,60 @@ async function main(): Promise<void> {
   console.log(`   clamped to the balance rather than reverting: ${afterClamp === 0n}`);
   if (afterClamp !== 0n) throw new Error(`expected 0 after full exit, got ${afterClamp}`);
 
+  // ---------------------------------------------------------------------------------------------
+  // 4. Leaving confidential form entirely: unwrap the confidential balance the pool sent back, then
+  //    finalize it into plain, public USDC in the saver's own wallet.
+  // ---------------------------------------------------------------------------------------------
+  const wrappedBalance = await revealWrapped();
+  console.log(`\n4. confidential (wrapper) balance now held: ${ethers.formatUnits(wrappedBalance, 6)} ptUSDC`);
+  if (wrappedBalance === 0n) throw new Error("nothing to unwrap");
+
+  const underlyingBefore = await underlying.balanceOf(saver.address);
+  console.log(`   public USDC balance before unwrap: ${ethers.formatUnits(underlyingBefore, 6)} tUSDC`);
+
+  const unwrapInput = await withRelayerRetry(
+    () => fhevm.createEncryptedInput(tokenAddress, saver.address).add64(wrappedBalance).encrypt(),
+    { label: "encrypt unwrap amount", log: (m) => console.log(m) },
+  );
+  const unwrapTx = await token
+    .connect(saver)
+    ["unwrap(address,address,bytes32,bytes)"](
+      saver.address,
+      saver.address,
+      unwrapInput.handles[0]!,
+      unwrapInput.inputProof,
+    );
+  const unwrapReceipt = await unwrapTx.wait();
+  console.log(`\n5. unwrap requested   ${unwrapTx.hash}  gas ${unwrapReceipt?.gasUsed}`);
+
+  const unwrapRequestedTopic = token.interface.getEvent("UnwrapRequested")!.topicHash;
+  const requestLog = unwrapReceipt!.logs.find((log) => log.topics[0] === unwrapRequestedTopic);
+  if (!requestLog) throw new Error("no UnwrapRequested event in the unwrap transaction");
+  const parsed = token.interface.decodeEventLog("UnwrapRequested", requestLog.data, requestLog.topics);
+  const unwrapRequestId = parsed.unwrapRequestId as string;
+  console.log(`   request id ${unwrapRequestId}`);
+
+  const unwrapAmountHandle = await token.unwrapAmount(unwrapRequestId);
+  const { value: unwrapAmountClear, proof: unwrapProof } = await publicDecryptNumber(unwrapAmountHandle);
+  console.log(`   KMS-decrypted amount: ${ethers.formatUnits(unwrapAmountClear, 6)} tUSDC`);
+
+  const finalizeTx = await token
+    .connect(saver)
+    .finalizeUnwrap(unwrapRequestId, unwrapAmountClear, unwrapProof);
+  const finalizeReceipt = await finalizeTx.wait();
+  console.log(`\n6. unwrap finalized   ${finalizeTx.hash}  gas ${finalizeReceipt?.gasUsed}`);
+
+  const underlyingAfter = await underlying.balanceOf(saver.address);
+  console.log(`   public USDC balance after unwrap:  ${ethers.formatUnits(underlyingAfter, 6)} tUSDC`);
+  const unwrapExact = underlyingAfter - underlyingBefore === unwrapAmountClear;
+  console.log(`   received exactly the unwrapped amount: ${unwrapExact}`);
+  if (!unwrapExact) {
+    throw new Error(
+      `expected public balance to increase by ${unwrapAmountClear}, ` +
+        `it increased by ${underlyingAfter - underlyingBefore}`,
+    );
+  }
+
   const evidence = {
     network: manifest.network,
     chainId,
@@ -94,6 +168,8 @@ async function main(): Promise<void> {
     recordedAt: new Date().toISOString(),
     saver: saver.address,
     pool: poolAddress,
+    confidentialToken: tokenAddress,
+    underlyingToken: underlyingAddress,
     openingPrincipalUnits: opening.toString(),
     partialWithdrawal: {
       requestedUnits: partial.toString(),
@@ -109,6 +185,21 @@ async function main(): Promise<void> {
       principalAfterUnits: afterClamp.toString(),
       clampedNotReverted: true,
       note: "Asking for 1000x the remaining balance succeeded and took exactly the balance. A revert here would let anyone probe a private balance by observing which amounts fail.",
+    },
+    unwrap: {
+      requestTxHash: unwrapTx.hash,
+      unwrapRequestId,
+      finalizeTxHash: finalizeTx.hash,
+      unwrappedUnits: unwrapAmountClear.toString(),
+      underlyingBalanceBeforeUnits: underlyingBefore.toString(),
+      underlyingBalanceAfterUnits: underlyingAfter.toString(),
+      exact: unwrapExact,
+      note:
+        "Withdrawal from the pool returns the confidential wrapper token, not plain ERC-20 — leaving " +
+        "confidential form entirely is the wrapper's own async unwrap: unwrap() requests it (the " +
+        "wrapper itself marks the amount publicly decryptable), then finalizeUnwrap() carries a " +
+        "KMS-signed cleartext to complete the ERC-20 transfer. Both steps run here, and the saver's " +
+        "public balance increases by exactly the unwrapped amount.",
     },
   };
 

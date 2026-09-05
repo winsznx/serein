@@ -89,14 +89,15 @@ Draw #3, decrypted before and after by each participant themselves: 100 → 100,
 **Claim.** Principal comes out at any draw stage, and asking for more than you hold takes exactly
 what you hold rather than reverting.
 
-|                    |                                                                                                                                                                                                                                                                                                                 |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Why it matters** | Reverting on "amount exceeds balance" would turn every failed transaction into an oracle for probing a private balance                                                                                                                                                                                          |
-| **Code**           | `SereinPool._withdraw` — `FHE.min(requested, balance)`, no draw-state dependency                                                                                                                                                                                                                                |
-| **Tests**          | Withdrawals at three separate draw stages, with the consistency proof still passing afterwards                                                                                                                                                                                                                  |
-| **Live**           | Partial [`0xa69d964b…`](https://sepolia.etherscan.io/tx/0xa69d964b20bca66ed49037b227a669b23ffe393cbb4f804baa6f532ed7d6be0e) 100 → 75 exactly · 1000× over-withdrawal [`0x5d3a8f08…`](https://sepolia.etherscan.io/tx/0x5d3a8f0800c35efba85759c08a7fd347a6961c847f75cd7e4df47800cfe63198) → exactly 0, no revert |
-| **Artifact**       | [`evidence/legacy-custom-token/live/withdrawal.json`](evidence/legacy-custom-token/live/withdrawal.json)                                                                                                                                                                                                        |
-| **Reproduce**      | `hardhat run scripts/live-withdraw.ts --network sepolia`                                                                                                                                                                                                                                                        |
+|                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Why it matters**   | Reverting on "amount exceeds balance" would turn every failed transaction into an oracle for probing a private balance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **Code**             | `SereinPool._withdraw` — `FHE.min(requested, balance)`, no draw-state dependency                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Tests**            | Withdrawals at three separate draw stages, with the consistency proof still passing afterwards                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **Live (canonical)** | Partial [`0x10471c90…`](https://sepolia.etherscan.io/tx/0x10471c90d5da931b39e65d2c3df6fba7a9d2a893b68422187ad4f1675eff7bfb) 100 → 75 exactly · 1000× over-withdrawal [`0x7d0d2c7d…`](https://sepolia.etherscan.io/tx/0x7d0d2c7d01e7e168c1df203d560fbe3960e12aaf09f420079999965c2e14c7ac) → exactly 0, no revert · then `unwrap()` [`0x043370f2…`](https://sepolia.etherscan.io/tx/0x043370f2d8a2e7ecca985dd09b47392dfafecd294d36dce45077e7f8ae3636e0) → KMS public decryption → `finalizeUnwrap()` [`0x12e5b196…`](https://sepolia.etherscan.io/tx/0x12e5b1963e176783bc65a93c959c038524f1c27c4c5e19e3abdbe7208929ef20), plain USDC balance increasing by exactly the unwrapped 100 |
+| **Live (legacy)**    | [`evidence/legacy-custom-token/live/withdrawal.json`](evidence/legacy-custom-token/live/withdrawal.json) — pool-level withdrawal only, does not carry the unwrap through to finalization                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Artifact**         | [`evidence/live/withdrawal.json`](evidence/live/withdrawal.json)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Reproduce**        | `hardhat run scripts/live-withdraw.ts --network sepolia`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 ---
 
@@ -185,11 +186,32 @@ C:  50 × 900s =  45,000,000,000
 Anyone can check this: read `observationAt(A, i)` for the timestamps, `getDraw(4)` for the window and
 the published aggregate, and do the multiplication.
 
-|           |                                                                                                                       |
-| --------- | --------------------------------------------------------------------------------------------------------------------- |
-| **Code**  | `EncryptedTWAB.weightBetween` — two frozen lookups                                                                    |
-| **Tests** | Withdrawals at three separate draw stages, consistency still verified                                                 |
-| **Live**  | Draw #4, [`evidence/legacy-custom-token/live/draws/draw-4.json`](evidence/legacy-custom-token/live/draws/draw-4.json) |
+The canonical deployment's draw #5 goes further: the balance change happens **inside** the epoch, not
+after it, requiring the piecewise integral rather than a single frozen lookup — and the participant
+wins. Participant A's balance moved twice within draw #5's own window (100 → 75 → 0, the live
+withdrawal in section 5 above, landing mid-draw this time), and she held zero principal at claim time:
+
+```
+A: 100 × 1,992s + 75 × 36s =  201,900,000,000   two balance changes inside the epoch
+B: 250 × 2,700s            =  675,000,000,000
+C:  50 × 2,700s            =  135,000,000,000
+D: 500 × 2,700s            = 1,350,000,000,000
+E:  75 × 2,700s            =  202,500,000,000
+F: 300 × 2,700s            =  810,000,000,000
+                              -----------------
+                  published = 3,374,400,000,000     matches the on-chain verified aggregate
+```
+
+Using `final_balance × epoch` for A gives 0; using `initial_balance × epoch` gives 270,000,000,000 —
+neither matches. Only the piecewise sum does, and it matched exactly on independent recomputation.
+Participant A won this draw with zero principal at claim time.
+
+|                      |                                                                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Code**             | `EncryptedTWAB.weightBetween` — two frozen lookups                                                                                 |
+| **Tests**            | Withdrawals at three separate draw stages, consistency still verified                                                              |
+| **Live (canonical)** | Draw #5, [`evidence/live/draws/draw-5.json`](evidence/live/draws/draw-5.json) — mid-epoch, winner                                  |
+| **Live (legacy)**    | Draw #4, [`evidence/legacy-custom-token/live/draws/draw-4.json`](evidence/legacy-custom-token/live/draws/draw-4.json) — post-close |
 
 ---
 
@@ -217,12 +239,40 @@ directly on Zama's Sepolia `cUSDCMock`, resolved through the on-chain
 rather than a hardcoded address — `deploy-canonical.ts` calls `getConfidentialTokenAddress`, checks
 `isValid`, and refuses to deploy against anything the registry doesn't itself vouch for.
 
-Every property this document claims was re-proven against the new pair, not assumed to carry over:
-wrap, confidential deposit, live-relayer encryption and user decryption, a full weighted draw with a
-real winner, independent aggregate recomputation from on-chain timestamps, and all four confidentiality
-refusals. See [DECISIONS.md](DECISIONS.md#zamas-registered-cusdcmock-not-a-serein-owned-token) for the
-full reasoning and [`evidence/legacy-custom-token/`](evidence/legacy-custom-token/) for the earlier,
-still fully-verified campaign that ran on Serein's own token pair before the migration.
+The canonical deployment re-proves the core asset, confidentiality, weighted-selection,
+aggregate-consistency, principal-conservation, zero-weight, permissionless-recovery, withdrawal, and
+frozen-weight paths against Zama's registered `cUSDCMock`. Additional adversarial scenarios from the
+original campaign remain preserved as historical evidence and are identified where cited.
+
+- **Wrap, deposit, live-relayer encryption/decryption** — the initial smoke test: mint, wrap, encrypted
+  deposit, live user decryption, exact value round-tripped.
+- **A full weighted draw with a real winner, multi-batch selection** — draw #2.
+- **Permissionless recovery** — draw #3: keeper walked 2 of 6, a participant wallet with no
+  operational role resumed from the stored cursor and finished the rest.
+- **Withdrawal, over-withdrawal clamping, and the full unwrap-to-plain-USDC path** —
+  [`evidence/live/withdrawal.json`](evidence/live/withdrawal.json): partial withdrawal, a 1000x
+  over-withdrawal clamped rather than reverted, then `unwrap()` → KMS public decryption →
+  `finalizeUnwrap()`, with the saver's plain USDC balance increasing by exactly the unwrapped amount.
+  This goes one step further than the original campaign's withdrawal evidence, which stopped at the
+  confidential-wrapper balance and did not carry the unwrap request through to finalization.
+- **The frozen-weight invariant** — draw #5: participant A's balance changed twice inside the epoch
+  (100 → 75 → 0, the same withdrawal above landing mid-window) and she held zero principal at claim
+  time, yet won the draw. Her weight, `201,900,000,000`, is the exact piecewise integral
+  (100 × 1,992s + 75 × 36s), independently recomputed and matched exactly by `verify-aggregate.ts`.
+- **Aggregate independently recomputed from on-chain timestamps** — draws #2, #3, and #5, all exact
+  matches.
+- **All four confidentiality refusals** — every canonical draw.
+
+Not yet reproduced live on the canonical pair: a multi-attempt rejection-sampling draw
+(`randomAttempts > 1`). Every canonical draw run so far accepted its first candidate — the
+40%–probability-of-rejection worst case is unmodified protocol code, already proven live on the
+original deployment (draw #5 there, 50.3% acceptance, 3 rejected candidates), and the mathematical
+proof plus the 10,000-scenario corpus establish correctness independent of which live draw happens to
+land on it.
+
+See [DECISIONS.md](DECISIONS.md#zamas-registered-cusdcmock-not-a-serein-owned-token) for the full
+migration reasoning and [`evidence/legacy-custom-token/`](evidence/legacy-custom-token/) for the
+earlier, still fully-verified campaign that ran on Serein's own token pair before the migration.
 
 ---
 
