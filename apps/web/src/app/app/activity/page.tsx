@@ -7,7 +7,8 @@ import { usePublicClient } from "wagmi";
 import { Card, StatusPill } from "@/components/ui";
 import { ConnectButton, useWalletStatus } from "@/components/wallet";
 import { deployment, explorerTx } from "@/lib/chain";
-import { getDeployment } from "@serein/protocol-sdk";
+import { estimateBlockForTimestamp, fetchLogsInWindows } from "@/lib/chain-logs";
+import { getDeployment, SereinPoolAbi } from "@serein/protocol-sdk";
 
 /**
  * Your activity on Serein.
@@ -19,6 +20,13 @@ import { getDeployment } from "@serein/protocol-sdk";
  *
  * Built from event logs rather than a database. There is no server-side history to trust or to go
  * stale — what you see is what the chain says, and every row links to the transaction.
+ *
+ * The log search is bounded by the wallet's own first observation, not the contract's deployment
+ * block. Alchemy's free tier — what the deployed app runs on — rejects `eth_getLogs` outright past a
+ * 10-block range, so a scan from deployment to `latest` (tens of thousands of blocks) never actually
+ * ran; it silently failed and produced "Nothing yet" for wallets with real history. Every deposit
+ * writes an observation, so `observationAt(address, 0)` is a single cheap read that pins down when
+ * this wallet's history actually begins, without scanning for it.
  */
 const EVENTS = [
   {
@@ -69,49 +77,102 @@ export default function ActivityPage() {
       const pool = manifest.contracts.SereinPool;
       const reserve = manifest.contracts.SereinPrizeReserve;
       if (!pool || !reserve) return [];
-      const fromBlock = BigInt(pool.deployedAtBlock);
+      const poolAddress = pool.address as `0x${string}`;
+      const deployedAtBlock = BigInt(pool.deployedAtBlock);
 
-      const poolLogs = await Promise.all(
-        EVENTS.map(async (event) => {
-          const logs = await publicClient
-            .getLogs({
-              address: pool.address as `0x${string}`,
-              event: event.item,
-              args: { participant: address },
-              fromBlock,
-              toBlock: "latest",
-            })
-            .catch(() => []);
-          return logs.map((log) => ({
-            label: event.label,
-            detail: event.detail,
-            encrypted: event.detail === "Amount encrypted",
-            txHash: log.transactionHash,
-            blockNumber: log.blockNumber,
-          }));
+      const observationCount = await publicClient.readContract({
+        address: poolAddress,
+        abi: SereinPoolAbi,
+        functionName: "observationCount",
+        args: [address],
+      });
+
+      // No observation ever written for this address means no savings history to find — the log
+      // scan below would legitimately come back empty, so skip it rather than pay for it.
+      if (observationCount === 0n) return [];
+
+      const [firstObservation, latestBlock] = await Promise.all([
+        publicClient.readContract({
+          address: poolAddress,
+          abi: SereinPoolAbi,
+          functionName: "observationAt",
+          args: [address, 0n],
         }),
+        publicClient.getBlock({ blockTag: "latest" }),
+      ]);
+      const firstTimestamp = firstObservation[0];
+
+      const deployedBlock = await publicClient.getBlock({ blockNumber: deployedAtBlock });
+      const estimatedFrom = estimateBlockForTimestamp(
+        firstTimestamp,
+        { block: deployedAtBlock, timestamp: deployedBlock.timestamp },
+        { block: latestBlock.number, timestamp: latestBlock.timestamp },
+      );
+      // Generous padding before the estimate, in case the first observation predates the wallet's
+      // first *event* by a block or two (registration and the first deposit land in the same
+      // transaction, but the estimate itself carries a small margin of error).
+      const startPadding = 300n;
+      const fromBlock =
+        estimatedFrom - startPadding > deployedAtBlock
+          ? estimatedFrom - startPadding
+          : deployedAtBlock;
+
+      const [poolLogs, claimLogs] = await Promise.all([
+        fetchLogsInWindows(
+          publicClient,
+          poolAddress,
+          EVENTS.map((event) => event.item),
+          fromBlock,
+          latestBlock.number,
+        ),
+        fetchLogsInWindows(
+          publicClient,
+          reserve.address as `0x${string}`,
+          [CLAIM_EVENT],
+          fromBlock,
+          latestBlock.number,
+        ),
+      ]);
+
+      const eventByName = new Map<string, (typeof EVENTS)[number]>(
+        EVENTS.map((event) => [event.item.name, event]),
       );
 
-      const claimLogs = await publicClient
-        .getLogs({
-          address: reserve.address as `0x${string}`,
-          event: CLAIM_EVENT,
-          args: { participant: address },
-          fromBlock,
-          toBlock: "latest",
-        })
-        .catch(() => []);
-
-      const rows: Row[] = [
-        ...poolLogs.flat(),
-        ...claimLogs.map((log) => ({
+      const rows: Row[] = [];
+      for (const log of poolLogs) {
+        const decoded = log as unknown as {
+          eventName?: string;
+          args?: { participant?: `0x${string}` };
+          transactionHash: `0x${string}`;
+          blockNumber: bigint;
+        };
+        if (!decoded.eventName) continue;
+        if (decoded.args?.participant?.toLowerCase() !== address.toLowerCase()) continue;
+        const event = eventByName.get(decoded.eventName);
+        if (!event) continue;
+        rows.push({
+          label: event.label,
+          detail: event.detail,
+          encrypted: event.detail === "Amount encrypted",
+          txHash: decoded.transactionHash,
+          blockNumber: decoded.blockNumber,
+        });
+      }
+      for (const log of claimLogs) {
+        const decoded = log as unknown as {
+          args?: { participant?: `0x${string}` };
+          transactionHash: `0x${string}`;
+          blockNumber: bigint;
+        };
+        if (decoded.args?.participant?.toLowerCase() !== address.toLowerCase()) continue;
+        rows.push({
           label: "Collected a draw result",
           detail: "Outcome encrypted",
           encrypted: true,
-          txHash: log.transactionHash,
-          blockNumber: log.blockNumber,
-        })),
-      ];
+          txHash: decoded.transactionHash,
+          blockNumber: decoded.blockNumber,
+        });
+      }
 
       return rows.sort((a, b) => (a.blockNumber < b.blockNumber ? 1 : -1));
     },
