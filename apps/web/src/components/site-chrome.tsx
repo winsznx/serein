@@ -237,7 +237,7 @@ export function SiteFooter({ surface = "dark" }: { surface?: "light" | "dark" })
       links: [
         { href: "/proof", label: "Proof view" },
         { href: "/docs/contracts", label: "Live contracts" },
-        { href: "https://github.com/serein-protocol/serein", label: "Source" },
+        { href: "https://github.com/winsznx/serein", label: "Source" },
       ],
     },
   ];

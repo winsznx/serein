@@ -10,7 +10,18 @@ export default [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
-    ignores: [".next/**", ".open-next/**", "public/**", "node_modules/**", "*.config.mjs"],
+    // `.wrangler/` is Workers' own local-preview scratch space (miniflare's bundled worker,
+    // dev-session state) — it never exists in a fresh checkout, only after `preview`/`dev` has
+    // run locally, but linting it when it happens to be there pulls in a bundled, minified copy
+    // of the entire Worker and buries real findings under thousands of generated-code warnings.
+    ignores: [
+      ".next/**",
+      ".open-next/**",
+      ".wrangler/**",
+      "public/**",
+      "node_modules/**",
+      "*.config.mjs",
+    ],
   },
   {
     rules: {
