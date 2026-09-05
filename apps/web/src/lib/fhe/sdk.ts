@@ -169,6 +169,11 @@ export async function getFheInstance(): Promise<FhevmInstance> {
       await sdk.initSDK({ thread: 1 });
     } catch (error) {
       instancePromise = null;
+      // The message below is a guess at the cause for whoever hits it; the console line is not —
+      // this is the one place a WASM failure that never reaches a support conversation still leaves
+      // a trace, since `FheUnavailableError` intentionally shows a saver a short, calm sentence
+      // instead of a stack trace, and the real `cause` would otherwise go completely unseen.
+      console.error("[serein] Zama SDK WASM init failed:", error);
       throw new FheUnavailableError(
         "The encryption library failed to start. This can happen if your browser blocks WebAssembly.",
         { cause: error },
@@ -184,9 +189,17 @@ export async function getFheInstance(): Promise<FhevmInstance> {
       return await sdk.createInstance({ ...sdk.SepoliaConfig, chainId: CHAIN_ID, network });
     } catch (error) {
       instancePromise = null;
+      // Same reasoning as above. This step fetches the FHE public key and CRS from the relayer and
+      // its S3 key store — a network failure here can come from the relayer itself, from a
+      // restrictive in-app browser (a social app's embedded browser is a common source of this,
+      // since it applies its own network policy on top of the page's), or from an actual outage.
+      // Nothing about the visible symptom tells them apart; the console line is where that starts.
+      console.error("[serein] Zama SDK createInstance failed:", error);
       throw new FheUnavailableError(
-        "Could not reach the Zama relayer. It may be rate-limiting or temporarily unavailable — " +
-          "your savings are unaffected, and you can retry in a moment.",
+        "Could not reach the Zama relayer. It may be rate-limiting or temporarily unavailable, or " +
+          "this browser may be restricting the connection — if you're inside another app's built-in " +
+          "browser, try opening this page in Safari or Chrome directly. Your savings are unaffected, " +
+          "and you can retry in a moment.",
         { cause: error },
       );
     }
