@@ -10,10 +10,30 @@ without a pitch voice.
 ## Before recording
 
 - A fresh browser profile with a wallet extension, on Sepolia, holding a little test ETH.
-- Several wallets you control already holding savings. One will win, so the recording can show a
-  real encrypted prize being revealed and collected rather than relying on luck.
+- Several wallets you control already holding savings, so the recording can show a real encrypted
+  prize being revealed and collected rather than relying on a live draw's luck.
 - The keeper running (`keeper:sepolia`), so a draw closes during the recording.
 - Two tabs: the app, and `/proof`.
+
+### Know which wallet will claim, before you record
+
+The winner is genuinely unknowable from outside — `isCredited` is set for every participant during
+selection, winner or not, so only a participant's own key can decrypt whether their credit is
+nonzero. That is a real property, not a recording inconvenience, and this doesn't get around it: it
+only works because every wallet in the roster is one you already control.
+
+Once a draw with your wallets has finalized, check all of them at once, off camera:
+
+```
+SEREIN_DRAW_ID=<id> hardhat run scripts/check-winner.ts --network sepolia
+```
+
+It decrypts each controlled wallet's credit for that draw using that wallet's own key (the same
+signature a real saver would give in the app) and reports which one actually won and whether it has
+already claimed. Import **that wallet's** private key into the recording browser profile for the
+segment below — the reveal and the collect are both real, you just aren't leaving which wallet to
+feature to chance during a take. If nothing has an unclaimed win yet, run another live draw
+(`hardhat run scripts/live-proof.ts --network sepolia`) and check again once it finalizes.
 
 Check the current draw's countdown first and start recording so that step 8 lands near the close.
 
@@ -81,12 +101,14 @@ Point at the bound and the attempt count.
 
 **2:25 — Reveal and collect the winning result** _(20s)_
 
-Reveal the result for each controlled participant, then switch to the winning wallet. Show its
-encrypted prize amount and collect it.
+Switch to the wallet `check-winner.ts` identified beforehand. Reveal its result and collect.
 
 > This wallet won. The prize amount was encrypted until this wallet authorized the reveal, and now it
 > can collect it. Everyone uses the same collect function; a non-winner moves an encrypted zero, so
 > claim calldata, events, and transfer amounts do not directly disclose the result.
+
+Optional, if there's time: switch to a non-winning controlled wallet first and reveal its result too,
+so the recording shows both outcomes using the identical button and identical-looking transaction.
 
 **2:45 — Take it out** _(15s)_
 
