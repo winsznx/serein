@@ -6,7 +6,7 @@ import { NetworkGuard } from "@/components/wallet";
 import { DarkSurface } from "./head-surface";
 
 export const metadata: Metadata = {
-  title: { default: "Savings", template: "%s · Serein" },
+  title: { default: "Overview", template: "%s · Serein" },
 };
 
 /**

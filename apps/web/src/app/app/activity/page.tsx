@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { parseAbiItem } from "viem";
 import { usePublicClient } from "wagmi";
 
@@ -67,27 +68,43 @@ const CLAIM_EVENT = parseAbiItem(
 
 interface Row {
   label: string;
+  rawEvent: string;
   detail: string;
   encrypted: boolean;
   txHash: `0x${string}`;
   blockNumber: bigint;
+  timestamp: bigint;
 }
 
 /** The JSON-safe shape a `Row` is stored as — `bigint` doesn't survive `JSON.stringify`. */
-type CachedRow = Omit<Row, "blockNumber"> & { blockNumber: string };
+type CachedRow = Omit<Row, "blockNumber" | "timestamp"> & {
+  blockNumber: string;
+  timestamp: string;
+};
 
 function toCachedRow(row: Row): CachedRow {
-  return { ...row, blockNumber: row.blockNumber.toString() };
+  return { ...row, blockNumber: row.blockNumber.toString(), timestamp: row.timestamp.toString() };
 }
 
 function fromCachedRow(row: CachedRow): Row {
-  return { ...row, blockNumber: BigInt(row.blockNumber) };
+  return { ...row, blockNumber: BigInt(row.blockNumber), timestamp: BigInt(row.timestamp) };
+}
+
+/** Today / Yesterday / Earlier, from each row's own block timestamp — not wall-clock guesswork. */
+function dayBucket(timestamp: bigint, now: number): "Today" | "Yesterday" | "Earlier" {
+  const rowDay = Math.floor(Number(timestamp) / 86_400);
+  const today = Math.floor(now / 86_400);
+  if (rowDay === today) return "Today";
+  if (rowDay === today - 1) return "Yesterday";
+  return "Earlier";
 }
 
 export default function ActivityPage() {
   const { address, isConnected, isRestoring } = useWalletStatus();
   const publicClient = usePublicClient();
   const state = deployment();
+  const [showRaw, setShowRaw] = useState(false);
+  const [now] = useState(() => Math.floor(Date.now() / 1000));
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["activity", address, state.commit],
@@ -178,41 +195,58 @@ export default function ActivityPage() {
         EVENTS.map((event) => [event.item.name, event]),
       );
 
-      const rows: Row[] = [];
+      type DecodedLog = {
+        eventName?: string;
+        args?: { participant?: `0x${string}` };
+        transactionHash: `0x${string}`;
+        blockNumber: bigint;
+      };
+      const matches: { decoded: DecodedLog; label: string; detail: string; rawEvent: string }[] =
+        [];
       for (const log of poolLogs) {
-        const decoded = log as unknown as {
-          eventName?: string;
-          args?: { participant?: `0x${string}` };
-          transactionHash: `0x${string}`;
-          blockNumber: bigint;
-        };
+        const decoded = log as unknown as DecodedLog;
         if (!decoded.eventName) continue;
         if (decoded.args?.participant?.toLowerCase() !== address.toLowerCase()) continue;
         const event = eventByName.get(decoded.eventName);
         if (!event) continue;
-        rows.push({
+        matches.push({
+          decoded,
           label: event.label,
           detail: event.detail,
-          encrypted: event.detail === "Amount encrypted",
-          txHash: decoded.transactionHash,
-          blockNumber: decoded.blockNumber,
+          rawEvent: decoded.eventName,
         });
       }
       for (const log of claimLogs) {
-        const decoded = log as unknown as {
-          args?: { participant?: `0x${string}` };
-          transactionHash: `0x${string}`;
-          blockNumber: bigint;
-        };
+        const decoded = log as unknown as DecodedLog;
         if (decoded.args?.participant?.toLowerCase() !== address.toLowerCase()) continue;
-        rows.push({
+        matches.push({
+          decoded,
           label: "Collected a draw result",
           detail: "Outcome encrypted",
-          encrypted: true,
-          txHash: decoded.transactionHash,
-          blockNumber: decoded.blockNumber,
+          rawEvent: "PrizeClaimed",
         });
       }
+
+      // Block timestamps for day-bucketing, fetched once per distinct block — a handful of plain
+      // `eth_getBlockByNumber` calls, not a ranged `eth_getLogs` query, so this carries none of the
+      // free-tier range-cap risk the log scan above is built around.
+      const distinctBlocks = [...new Set(matches.map((match) => match.decoded.blockNumber))];
+      const blocks = await Promise.all(
+        distinctBlocks.map((blockNumber) => publicClient.getBlock({ blockNumber })),
+      );
+      const timestampByBlock = new Map<bigint, bigint>(
+        distinctBlocks.map((blockNumber, index) => [blockNumber, blocks[index]!.timestamp]),
+      );
+
+      const rows: Row[] = matches.map((match) => ({
+        label: match.label,
+        rawEvent: match.rawEvent,
+        detail: match.detail,
+        encrypted: match.detail === "Amount encrypted" || match.detail === "Outcome encrypted",
+        txHash: match.decoded.transactionHash,
+        blockNumber: match.decoded.blockNumber,
+        timestamp: timestampByBlock.get(match.decoded.blockNumber) ?? 0n,
+      }));
 
       const merged = [...(cached?.rows.map(fromCachedRow) ?? []), ...rows].sort((a, b) =>
         a.blockNumber < b.blockNumber ? 1 : -1,
@@ -274,37 +308,63 @@ export default function ActivityPage() {
       ) : null}
 
       {data && data.length > 0 ? (
-        <ul className="space-y-2">
-          {data.map((row) => (
-            <li key={`${row.txHash}-${row.label}`}>
-              <Card className="p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-small font-medium">{row.label}</p>
-                    <p className="mt-0.5 text-caption text-white/45">
-                      block {row.blockNumber.toString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {row.encrypted ? (
-                      <StatusPill state="encrypted">{row.detail}</StatusPill>
-                    ) : (
-                      <StatusPill state="public">{row.detail}</StatusPill>
-                    )}
-                    <a
-                      href={explorerTx(row.txHash)}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="text-caption text-violet underline underline-offset-4"
-                    >
-                      view
-                    </a>
-                  </div>
-                </div>
-              </Card>
-            </li>
+        <>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowRaw((value) => !value)}
+              className="text-caption text-white/45 underline underline-offset-4 hover:text-white/70"
+            >
+              {showRaw ? "Hide protocol events" : "View protocol events"}
+            </button>
+          </div>
+
+          {groupByDay(data, now).map(([bucket, rows]) => (
+            <div key={bucket} className="space-y-2">
+              <h2 className="text-caption font-medium uppercase tracking-wide text-white/45">
+                {bucket}
+              </h2>
+              <ul className="space-y-2">
+                {rows.map((row) => (
+                  <li key={`${row.txHash}-${row.label}`}>
+                    <Card className="p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-small font-medium">
+                            {row.label}
+                            {showRaw ? (
+                              <span className="ml-2 font-mono text-caption text-white/35">
+                                {row.rawEvent}
+                              </span>
+                            ) : null}
+                          </p>
+                          <p className="mt-0.5 text-caption text-white/45">
+                            Confirmed · {formatTime(row.timestamp)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {row.encrypted ? (
+                            <StatusPill state="encrypted">{row.detail}</StatusPill>
+                          ) : (
+                            <StatusPill state="public">{row.detail}</StatusPill>
+                          )}
+                          <a
+                            href={explorerTx(row.txHash)}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="text-caption text-violet underline underline-offset-4"
+                          >
+                            view ↗
+                          </a>
+                        </div>
+                      </div>
+                    </Card>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </>
       ) : null}
 
       {data && data.length === 0 && !isLoading ? (
@@ -314,4 +374,24 @@ export default function ActivityPage() {
       ) : null}
     </div>
   );
+}
+
+function formatTime(timestamp: bigint): string {
+  if (timestamp === 0n) return "—";
+  return new Date(Number(timestamp) * 1000).toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function groupByDay(rows: Row[], now: number): [string, Row[]][] {
+  const buckets = new Map<string, Row[]>([
+    ["Today", []],
+    ["Yesterday", []],
+    ["Earlier", []],
+  ]);
+  for (const row of rows) {
+    buckets.get(dayBucket(row.timestamp, now))!.push(row);
+  }
+  return [...buckets.entries()].filter(([, rows]) => rows.length > 0);
 }

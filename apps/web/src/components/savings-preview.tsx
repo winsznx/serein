@@ -53,7 +53,7 @@ export function SavingsCardPreview({ className }: { className?: string }) {
           Add savings
         </span>
         <span className="flex min-h-11 flex-1 items-center justify-center rounded-pill border border-white/25 text-small font-medium text-white">
-          Take out
+          Withdraw
         </span>
       </div>
     </div>

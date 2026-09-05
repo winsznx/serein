@@ -24,9 +24,9 @@ const MARKETING_LINKS = [
 ];
 
 const APP_LINKS = [
-  { href: "/app", label: "Savings" },
+  { href: "/app", label: "Overview" },
   { href: "/app/save", label: "Add" },
-  { href: "/app/withdraw", label: "Take out" },
+  { href: "/app/withdraw", label: "Withdraw" },
   { href: "/app/draws", label: "Draws" },
   { href: "/app/activity", label: "Activity" },
 ];
@@ -168,9 +168,9 @@ export function AppBottomNav() {
   const pathname = usePathname();
 
   const items = [
-    { href: "/app", label: "Savings", icon: "M4 12h16M4 7h16M4 17h10" },
+    { href: "/app", label: "Overview", icon: "M4 12h16M4 7h16M4 17h10" },
     { href: "/app/save", label: "Add", icon: "M12 5v14M5 12h14" },
-    { href: "/app/withdraw", label: "Take out", icon: "M5 12h14" },
+    { href: "/app/withdraw", label: "Withdraw", icon: "M5 12h14" },
     { href: "/app/draws", label: "Draws", icon: "M12 4v8l5 3" },
     { href: "/proof", label: "Proof", icon: "M5 12l4 4 10-10" },
   ];

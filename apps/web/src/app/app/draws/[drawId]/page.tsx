@@ -191,6 +191,18 @@ export default function DrawDetailPage({ params }: { params: Promise<{ drawId: s
               <StatusPill state="pending">Not yet</StatusPill>
             )}
           </DataRow>
+          <DataRow
+            label="Random candidates"
+            hint="Serein rejects candidates outside the real aggregate range rather than scaling the distribution."
+          >
+            <span className="tabular">
+              {draw.randomAttempts <= 0
+                ? "—"
+                : draw.randomAttempts === 1
+                  ? "1"
+                  : `${draw.randomAttempts - 1} rejected · 1 accepted`}
+            </span>
+          </DataRow>
           <DataRow label="Your draw weight">
             <StatusPill state="encrypted">Private</StatusPill>
           </DataRow>
@@ -201,6 +213,11 @@ export default function DrawDetailPage({ params }: { params: Promise<{ drawId: s
             <StatusPill state="encrypted">Encrypted</StatusPill>
           </DataRow>
         </dl>
+
+        <p className="mt-4 text-caption text-white/45">
+          Individual balances, weights, the random target, the winner predicate, and prize amounts
+          remain encrypted. The aggregate above is public by design, once the epoch is frozen.
+        </p>
 
         <Link
           href={`/proof/draws/${parsed}`}
