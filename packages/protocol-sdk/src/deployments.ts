@@ -7,7 +7,25 @@ export interface DeploymentManifest {
   deployedAt: string;
   deployer: string;
   drawDurationSeconds: string;
-  contracts: Record<string, { address: string; deployedAtBlock: number; txHash: string }>;
+  /**
+   * `"zama-canonical"` when the confidential asset is Zama's own registered wrapper, resolved
+   * through the on-chain ConfidentialTokenWrappersRegistry rather than deployed by Serein. Absent on
+   * older manifests, which deployed a Serein-owned token pair instead.
+   */
+  tokenSource?: string;
+  contracts: Record<
+    string,
+    {
+      address: string;
+      deployedAtBlock: number;
+      txHash: string;
+      /**
+       * The actual contract at this address, when it differs from the role-name key — e.g. the
+       * `ConfidentialUSDC` slot holding Zama's `cUSDCMock` rather than a contract Serein deployed.
+       */
+      contractName?: string;
+    }
+  >;
 }
 
 /**

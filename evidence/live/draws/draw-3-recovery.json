@@ -1,0 +1,68 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "commit": "adca595df5007e575a7fbc6326bafc9179b6a5ce",
+  "recordedAt": "2026-09-05T15:19:27.262Z",
+  "drawId": "3",
+  "firstOperator": "0xbD748dCaD3F85BFE4968E3D8B96e48640b61c3f2",
+  "secondOperator": "0xedd903d67F4b74b6d64B4b0a3138bcF666D84d3F",
+  "participantCount": 6,
+  "cursorAtInterrupt": 2,
+  "cursorAtFinish": 6,
+  "randomAttempts": 1,
+  "rejectedAfterResume": 0,
+  "verifiedTotalWeight": "1147500000000",
+  "consistencyVerified": true,
+  "hasWinner": true,
+  "steps": [
+    {
+      "step": "closeDraw",
+      "txHash": "0x8b2ebb294ae61cc549cc8a42b2c3d0a285028c08ec4e9914accca877e394aa64",
+      "at": "2026-09-05T15:17:38.915Z",
+      "gasUsed": "442333",
+      "detail": {
+        "drawId": "3"
+      }
+    },
+    {
+      "step": "submitTotalProof",
+      "txHash": "0xc84b94643571a5c2f354dc4ca816689ff288a6c5958587967371d83a0857f63c",
+      "at": "2026-09-05T15:17:50.565Z"
+    },
+    {
+      "step": "generateRandomCandidate",
+      "txHash": "0xf1dc19261e7bb5c0c17bb16be8bfc741635e0ea1f6e88a8fcb65128833646be6",
+      "at": "2026-09-05T15:18:01.401Z"
+    },
+    {
+      "step": "submitAcceptanceProof",
+      "txHash": "0xe9e45bfadeffb484b777d533a24172e0a014265c571f94201a57e0576866d6c6",
+      "at": "2026-09-05T15:18:25.611Z"
+    },
+    {
+      "step": "processSelectionBatch(2)",
+      "txHash": "0x4a8856e2b0ad80027b6779d0fcfdb4236259eac1bba24cf6ae329edb1d360374",
+      "at": "2026-09-05T15:18:39.013Z"
+    },
+    {
+      "step": "processSelectionBatch(4)",
+      "txHash": "0x2ee927fe3498c41e382a701ded71ba429703e0e81a2eb75499d6b4c7e4b84013",
+      "at": "2026-09-05T15:18:50.625Z",
+      "gasUsed": "1781191",
+      "detail": {
+        "batchSize": 4
+      }
+    },
+    {
+      "step": "submitConsistencyProof",
+      "txHash": "0xa75b49dfda4fd2379b2ecc07c5e7fa62baf12770eae341dd9d616e03fdffe4f8",
+      "at": "2026-09-05T15:19:26.826Z",
+      "gasUsed": "355592",
+      "detail": {
+        "consistent": true,
+        "handle": "0xeb6befb9010d6bdf2e73aec4b88f9b951ab669b6f8ff0000000000aa36a70000"
+      }
+    }
+  ],
+  "note": "The first operator stopped mid-selection. A second address that holds no operational role read the stored cursor and finished the same draw. Consistency verified afterwards, which would have failed had any participant been skipped or walked twice."
+}

@@ -88,16 +88,26 @@ async function main(): Promise<void> {
   const chainId = Number((await ethers.provider.getNetwork()).chainId);
   const manifest = loadManifest(chainId);
 
+  // On the Zama-canonical deployment, the "TestUSDC"/"ConfidentialUSDC" manifest slots hold Zama's
+  // own USDCMock/cUSDCMock — contracts Serein did not deploy and does not have (or need) the source
+  // for. Verifying them here would mean asserting our TestUSDC.sol/ConfidentialUSDC.sol source
+  // matches bytecode it never produced.
+  const isZamaCanonical = manifest.tokenSource === "zama-canonical";
+
   const targets = [
-    { name: "TestUSDC", source: "contracts/tokens/TestUSDC.sol", args: [] as unknown[] },
-    {
-      name: "ConfidentialUSDC",
-      source: "contracts/tokens/ConfidentialUSDC.sol",
-      args: [
-        addressOf(manifest, "TestUSDC"),
-        process.env.SEREIN_TOKEN_URI ?? "https://serein.pages.dev/tokens/ptusdc.json",
-      ],
-    },
+    ...(isZamaCanonical
+      ? []
+      : [
+          { name: "TestUSDC", source: "contracts/tokens/TestUSDC.sol", args: [] as unknown[] },
+          {
+            name: "ConfidentialUSDC",
+            source: "contracts/tokens/ConfidentialUSDC.sol",
+            args: [
+              addressOf(manifest, "TestUSDC"),
+              process.env.SEREIN_TOKEN_URI ?? "https://serein.pages.dev/tokens/ptusdc.json",
+            ],
+          },
+        ]),
     {
       name: "SereinPrizeReserve",
       source: "contracts/SereinPrizeReserve.sol",

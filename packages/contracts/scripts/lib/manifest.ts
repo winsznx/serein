@@ -8,7 +8,12 @@ export interface DeploymentManifest {
   deployedAt: string;
   deployer: string;
   drawDurationSeconds: string;
-  contracts: Record<string, { address: string; deployedAtBlock: number; txHash: string }>;
+  /** `"zama-canonical"` when the underlying/wrapper pair is Zama's own registered cUSDCMock. */
+  tokenSource?: string;
+  contracts: Record<
+    string,
+    { address: string; deployedAtBlock: number; txHash: string; contractName?: string }
+  >;
 }
 
 /**

@@ -72,13 +72,13 @@ blip must not be able to masquerade as proof of confidentiality.
 
 **Claim.** `principal_before_draw(u) == principal_after_draw(u)` for every participant, structurally.
 
-|                |                                                                                                                                                            |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Code**       | Two contracts with no path between them; the pool has no owner and no prize-spending function                                                              |
-| **Tests**      | Principal unchanged across a draw and across other people's claims; ABI assertions that no `setWinner`, `pickWinner`, `owner`, `sweep`, or `rescue` exists |
-| **Live**       | Draw #2 and #3: `principalConserved: true` for all three participants, decrypted before and after                                                          |
-| **Artifacts**  | [`evidence/live/draws/draw-2.json`](evidence/live/draws/draw-2.json), [`draw-3.json`](evidence/live/draws/draw-3.json)                                     |
-| **Limitation** | Gas is not principal and is paid by the saver. Disclosed separately.                                                                                       |
+|                |                                                                                                                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Code**       | Two contracts with no path between them; the pool has no owner and no prize-spending function                                                                                      |
+| **Tests**      | Principal unchanged across a draw and across other people's claims; ABI assertions that no `setWinner`, `pickWinner`, `owner`, `sweep`, or `rescue` exists                         |
+| **Live**       | Draw #2 and #3: `principalConserved: true` for all three participants, decrypted before and after                                                                                  |
+| **Artifacts**  | [`evidence/legacy-custom-token/live/draws/draw-2.json`](evidence/legacy-custom-token/live/draws/draw-2.json), [`draw-3.json`](evidence/legacy-custom-token/live/draws/draw-3.json) |
+| **Limitation** | Gas is not principal and is paid by the saver. Disclosed separately.                                                                                                               |
 
 Draw #3, decrypted before and after by each participant themselves: 100 → 100, 250 → 250, 50 → 50.
 
@@ -95,7 +95,7 @@ what you hold rather than reverting.
 | **Code**           | `SereinPool._withdraw` — `FHE.min(requested, balance)`, no draw-state dependency                                                                                                                                                                                                                                |
 | **Tests**          | Withdrawals at three separate draw stages, with the consistency proof still passing afterwards                                                                                                                                                                                                                  |
 | **Live**           | Partial [`0xa69d964b…`](https://sepolia.etherscan.io/tx/0xa69d964b20bca66ed49037b227a669b23ffe393cbb4f804baa6f532ed7d6be0e) 100 → 75 exactly · 1000× over-withdrawal [`0x5d3a8f08…`](https://sepolia.etherscan.io/tx/0x5d3a8f0800c35efba85759c08a7fd347a6961c847f75cd7e4df47800cfe63198) → exactly 0, no revert |
-| **Artifact**       | [`evidence/live/withdrawal.json`](evidence/live/withdrawal.json)                                                                                                                                                                                                                                                |
+| **Artifact**       | [`evidence/legacy-custom-token/live/withdrawal.json`](evidence/legacy-custom-token/live/withdrawal.json)                                                                                                                                                                                                        |
 | **Reproduce**      | `hardhat run scripts/live-withdraw.ts --network sepolia`                                                                                                                                                                                                                                                        |
 
 ---
@@ -105,9 +105,11 @@ what you hold rather than reverting.
 **Claim.** Any address can drive a draw; a keeper holds no privilege; an interrupted draw resumes
 from exactly where it stopped.
 
-Demonstrated live in draw #6, not only in tests. The keeper closed the draw, verified the aggregate,
-accepted a candidate, walked **two of six** participants and stopped. A different address — a
-participant wallet with no operational role — read the stored cursor and finished the remaining four.
+Demonstrated live twice: draw #6 on the original Serein-owned token, draw #3 again on the canonical
+Zama-asset deployment after the migration. Same result both times. The keeper closed the draw,
+verified the aggregate, accepted a candidate, walked **two of six** participants and stopped. A
+different address — a participant wallet with no operational role — read the stored cursor and
+finished the remaining four.
 
 ```
 cursor at interrupt : 2 / 6      (operator 0xbD74…c3f2)
@@ -119,13 +121,13 @@ The consistency proof is what makes this meaningful. Had the second operator ski
 or re-walked one the first had already done, the encrypted prefix would not have matched the
 published aggregate and the draw could not have finalized.
 
-|                |                                                                                                               |
-| -------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Code**       | Every progression function unauthenticated; cursor in storage                                                 |
-| **Tests**      | A complete draw driven by a signer that never touched the protocol; a failed batch leaving the cursor unmoved |
-| **Live**       | [`evidence/live/recovery-draw-6.json`](evidence/live/recovery-draw-6.json)                                    |
-| **Reproduce**  | `hardhat run scripts/live-recovery.ts --network sepolia`                                                      |
-| **Limitation** | Progression needs someone to pay gas. Absent a keeper, draws are late, not lost.                              |
+|                |                                                                                                                                                                                                                                         |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Code**       | Every progression function unauthenticated; cursor in storage                                                                                                                                                                           |
+| **Tests**      | A complete draw driven by a signer that never touched the protocol; a failed batch leaving the cursor unmoved                                                                                                                           |
+| **Live**       | [`evidence/live/draws/draw-3-recovery.json`](evidence/live/draws/draw-3-recovery.json) (canonical), [`evidence/legacy-custom-token/live/recovery-draw-6.json`](evidence/legacy-custom-token/live/recovery-draw-6.json) (original token) |
+| **Reproduce**  | `hardhat run scripts/live-recovery.ts --network sepolia`                                                                                                                                                                                |
+| **Limitation** | Progression needs someone to pay gas. Absent a keeper, draws are late, not lost.                                                                                                                                                        |
 
 ---
 
@@ -183,11 +185,11 @@ C:  50 × 900s =  45,000,000,000
 Anyone can check this: read `observationAt(A, i)` for the timestamps, `getDraw(4)` for the window and
 the published aggregate, and do the multiplication.
 
-|           |                                                                               |
-| --------- | ----------------------------------------------------------------------------- |
-| **Code**  | `EncryptedTWAB.weightBetween` — two frozen lookups                            |
-| **Tests** | Withdrawals at three separate draw stages, consistency still verified         |
-| **Live**  | Draw #4, [`evidence/live/draws/draw-4.json`](evidence/live/draws/draw-4.json) |
+|           |                                                                                                                       |
+| --------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Code**  | `EncryptedTWAB.weightBetween` — two frozen lookups                                                                    |
+| **Tests** | Withdrawals at three separate draw stages, consistency still verified                                                 |
+| **Live**  | Draw #4, [`evidence/legacy-custom-token/live/draws/draw-4.json`](evidence/legacy-custom-token/live/draws/draw-4.json) |
 
 ---
 
@@ -199,6 +201,29 @@ finalized with `hasWinner: false` rather than attempting `nextPowerOfTwo(0)`.
 
 Close [`0xcf4beaa4…`](https://sepolia.etherscan.io/tx/0xcf4beaa418f99dc6072ee6dbe407814871cf79078e32c3a9855d28ccac059a52) is draw #2's; draw #1's transcript is in the campaign log.
 
+It happened again, independently, on the canonical deployment's own draw #1 — the migration itself
+took longer than one 900-second draw window, so every participant's deposit again landed after close.
+Same code path, same correct handling, a different deployment: [`evidence/live/draws/draw-1.json`](evidence/live/draws/draw-1.json).
+
+---
+
+## 12. Migrated to Zama's registered `cUSDCMock`, re-verified end to end
+
+Serein's contracts were already written against generic `IERC7984`/`IERC7984ERC20Wrapper` — nothing in
+`SereinPool`, `SereinPrizeReserve`, or `MockPrizeSource` assumes the confidential token is one Serein
+deployed itself. That claim is now backed by more than the source: the canonical deployment runs
+directly on Zama's Sepolia `cUSDCMock`, resolved through the on-chain
+[Confidential Token Wrappers Registry](https://docs.zama.org/protocol/protocol-apps/confidential-tokens/wrapper-registry)
+rather than a hardcoded address — `deploy-canonical.ts` calls `getConfidentialTokenAddress`, checks
+`isValid`, and refuses to deploy against anything the registry doesn't itself vouch for.
+
+Every property this document claims was re-proven against the new pair, not assumed to carry over:
+wrap, confidential deposit, live-relayer encryption and user decryption, a full weighted draw with a
+real winner, independent aggregate recomputation from on-chain timestamps, and all four confidentiality
+refusals. See [DECISIONS.md](DECISIONS.md#zamas-registered-cusdcmock-not-a-serein-owned-token) for the
+full reasoning and [`evidence/legacy-custom-token/`](evidence/legacy-custom-token/) for the earlier,
+still fully-verified campaign that ran on Serein's own token pair before the migration.
+
 ---
 
 ## What is _not_ claimed
@@ -209,4 +234,8 @@ Close [`0xcf4beaa4…`](https://sepolia.etherscan.io/tx/0xcf4beaa418f99dc6072ee6
 - No claim that this "scales". Cost is linear, measured, and bounded — a pool of hundreds is
   operable, a pool of tens of thousands would need the compaction work in DECISIONS.md.
 - No claim of anonymity. See [PRIVACY.md](PRIVACY.md) for the residual leaks.
-- Draw counts here are small. Three complete live draws plus one zero-weight draw, not hundreds.
+- **Live draw count is still deliberately small.** Six live Sepolia draw lifecycles ran on the
+  original Serein-owned token (one zero-weight, five non-zero, preserved under
+  `evidence/legacy-custom-token/`), plus a fresh campaign on the canonical Zama-asset deployment.
+  These are repeated production-path demonstrations, not evidence of user adoption or large-scale
+  usage.

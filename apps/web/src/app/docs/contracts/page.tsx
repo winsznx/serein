@@ -24,6 +24,20 @@ const DESCRIPTIONS: Record<string, string> = {
     "A six-decimal faucet token with no monetary value, so a reviewer can complete the whole cycle from a fresh wallet.",
 };
 
+/**
+ * On the canonical deployment, the `ConfidentialUSDC`/`TestUSDC` manifest slots hold Zama's own
+ * registered `cUSDCMock`/`USDCMock` — contracts Serein does not deploy, own, or verify. Serein does
+ * not get to claim "source verified" for a contract it did not compile, and there is no deployment
+ * transaction of ours to link, since the deploy script resolved these from Zama's registry rather
+ * than deploying them.
+ */
+const ZAMA_DESCRIPTIONS: Record<string, string> = {
+  ConfidentialUSDC:
+    "Zama's registered Sepolia cUSDCMock — an ERC-7984 confidential wrapper Serein does not deploy or own. Resolved at deploy time through Zama's Confidential Token Wrappers Registry.",
+  TestUSDC:
+    "Zama's registered Sepolia USDCMock, the plain ERC-20 cUSDCMock wraps. A public mint(address,uint256), capped at 1,000,000 per call.",
+};
+
 const ORDER = [
   "SereinPool",
   "SereinPrizeReserve",
@@ -91,13 +105,18 @@ export default function ContractsPage() {
         <div className="space-y-4">
           {ORDER.filter((name) => manifest.contracts[name]).map((name) => {
             const entry = manifest.contracts[name]!;
+            const isExternal =
+              state.isZamaCanonical && (name === "ConfidentialUSDC" || name === "TestUSDC");
+            const description = isExternal ? ZAMA_DESCRIPTIONS[name] : DESCRIPTIONS[name];
             return (
               <div key={name} className="rounded-card border border-ash/50 p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-body font-medium text-midnight">{name}</h3>
-                  <StatusPill state="verified">Source verified</StatusPill>
+                  <StatusPill state={isExternal ? "public" : "verified"}>
+                    {isExternal ? "External · Zama" : "Source verified"}
+                  </StatusPill>
                 </div>
-                <p className="mt-2 text-small text-iron">{DESCRIPTIONS[name]}</p>
+                <p className="mt-2 text-small text-iron">{description}</p>
                 <p className="truncate-hex mt-3 font-mono text-caption text-iron">
                   {entry.address}
                 </p>
@@ -118,14 +137,16 @@ export default function ContractsPage() {
                   >
                     Verified source
                   </a>
-                  <a
-                    href={explorerTx(entry.txHash)}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="text-midnight underline underline-offset-4"
-                  >
-                    Deployment tx
-                  </a>
+                  {entry.txHash ? (
+                    <a
+                      href={explorerTx(entry.txHash)}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-midnight underline underline-offset-4"
+                    >
+                      Deployment tx
+                    </a>
+                  ) : null}
                 </div>
               </div>
             );

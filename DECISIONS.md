@@ -220,17 +220,41 @@ _(The `hardhat-verify` Sourcify task is broken against the current API; see [int
 
 ---
 
-## Serein's own faucet token, not a canonical Zama pair
+## Zama's registered `cUSDCMock`, not a Serein-owned token
 
-`zama-ai/dapps` does publish live Sepolia ERC-7984 deployments, so the option was real. But there is
-no open faucet a first-time visitor can mint from in one click, and the PRD's bar is that a judge
-completes the cycle from a fresh wallet without a DM or an allowlist.
+Serein's first deployment shipped its own `TestUSDC`/`ConfidentialUSDC` pair. The reasoning at the
+time held: no open faucet existed on any canonical Zama Sepolia pair that a first-time visitor could
+mint from in one click, and the bar was that a judge completes the cycle from a fresh wallet without a
+DM or an allowlist. `TestUSDC` solved that with a rate-limited `claim()` — 1,000 per call, four-hour
+cooldown, 50,000 lifetime cap per address — a guard against one address inflating the aggregate until
+everyone else's odds round to nothing.
 
-`TestUSDC` is rate-limited — 1,000 per claim, four-hour cooldown, 50,000 lifetime cap per address —
-not because it is worth farming but because one address minting without limit could inflate the
-aggregate until everyone else's odds round to nothing, which would make a live demo look broken.
+That reasoning turned out to be based on stale information. Zama's Sepolia `USDCMock`
+(`0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF`) has a plain public `mint(address,uint256)`, capped at
+1,000,000 tokens per call — a real, usable faucet, just not a function named `faucet()`. Verified
+directly against the deployed contract before touching anything: `getConfidentialTokenAddress` on the
+[Confidential Token Wrappers Registry](https://docs.zama.org/protocol/protocol-apps/confidential-tokens/wrapper-registry)
+(`0x2f0750Bbb0A246059d80e94c454586a7F27a128e`) resolves that USDC mock to `cUSDCMock`
+(`0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639`) with `isValid = true`; the wrapper's own `underlying()`
+resolves back to the same USDC mock; and it reports `IERC7984` support via ERC-165. All three checks
+are now assertions in `deploy-canonical.ts` itself, not just something verified once by hand — a
+future redeploy against a revoked or changed pair fails loudly at deploy time instead of shipping
+silently.
 
-The pool is written against `IERC7984`, so a deployment can point at any conforming token.
+There was no code reason to keep Serein's own pair once this was known. The pool was already written
+against generic `IERC7984`/`IERC7984ERC20Wrapper` — nothing in `SereinPool`, `SereinPrizeReserve`, or
+`MockPrizeSource` assumes the wrapper is one Serein deployed, and the live-proof and smoke-test
+scripts needed exactly one change each (mint instead of claim; see `scripts/lib/faucet.ts`) to run
+against the new pair unmodified otherwise. Owning a confidential-asset contract that Zama already
+operates, verifies, and maintains was two extra contracts on Serein's own audit surface for zero
+product behavior.
+
+`TestUSDC.sol`/`ConfidentialUSDC.sol` are not deleted. There is no real Zama registry to resolve
+against on a local Hardhat network, so the mock-FHEVM test suite and `deploy.ts` still deploy them —
+they are test fixtures now, which is what they always functionally were. The first live campaign that
+ran against them is preserved as historical evidence under `evidence/legacy-custom-token/`, not
+deleted, since it is still a fully verified and reproducible proof run — just of an earlier, less
+Zama-native configuration than the canonical deployment that replaced it.
 
 ---
 

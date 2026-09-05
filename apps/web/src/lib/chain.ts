@@ -37,6 +37,14 @@ export interface DeploymentState {
   deployedAt: string;
   drawDurationSeconds: number;
   addresses: SereinAddresses | null;
+  /**
+   * `true` when the underlying/confidential token pair is Zama's own registered `cUSDCMock`, resolved
+   * through the on-chain wrappers registry, rather than a Serein-deployed pair. The two pairs expose
+   * different mint mechanics — Zama's mock is a plain, uncapped-per-address `mint(address,uint256)`,
+   * Serein's own `TestUSDC` has a named `claim()` with a cooldown and lifetime cap — so screens that
+   * get a saver test tokens need to know which one they're pointed at.
+   */
+  isZamaCanonical: boolean;
 }
 
 const REQUIRED = {
@@ -60,6 +68,7 @@ export function deployment(): DeploymentState {
     const contract = manifest.contracts[name];
     return [key, contract?.address] as const;
   });
+  const isZamaCanonical = manifest.tokenSource === "zama-canonical";
 
   const missing = entries.filter(([, address]) => !address);
   if (missing.length > 0) {
@@ -69,6 +78,7 @@ export function deployment(): DeploymentState {
       deployedAt: manifest.deployedAt,
       drawDurationSeconds: Number(manifest.drawDurationSeconds),
       addresses: null,
+      isZamaCanonical,
     };
   }
 
@@ -78,6 +88,7 @@ export function deployment(): DeploymentState {
     deployedAt: manifest.deployedAt,
     drawDurationSeconds: Number(manifest.drawDurationSeconds),
     addresses: Object.fromEntries(entries) as unknown as SereinAddresses,
+    isZamaCanonical,
   };
 }
 

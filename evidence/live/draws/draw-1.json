@@ -2,7 +2,7 @@
   "network": "sepolia",
   "chainId": 11155111,
   "commit": "adca595df5007e575a7fbc6326bafc9179b6a5ce",
-  "startedAt": "2026-09-05T14:52:24.717Z",
+  "startedAt": "2026-09-05T14:39:01.646Z",
   "contracts": {
     "TestUSDC": "0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF",
     "ConfidentialUSDC": "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639",
@@ -46,106 +46,88 @@
     "underlyingWrapped": "200000000",
     "allocatedUnits": "120000000",
     "txHashes": [
-      "0xf6edc9588ac711bf762262d713bea63f13c76c7e0948fe55566e0cf16bcd1ba2",
-      "0xca63df709f6f33f17a4762d40239fad1d8be5a3fbccef1629dc1761c8af50e1d"
+      "0xb2c07ae674be9e5b35fd55bee0c4c0160640f5c528f8a8e6988cc0c75eb66aea",
+      "0x275d17d40a3d67105afe0a253ea9a7a768fe37d2117fa425add31bd2173f53b5"
     ]
   },
   "draw": {
-    "id": "2",
-    "startTimestamp": "1788618684",
-    "endTimestamp": "1788620484",
+    "id": "1",
+    "startTimestamp": "1788617784",
+    "endTimestamp": "1788618684",
     "participantCount": 6,
-    "verifiedTotalWeight": "1406400000000",
-    "randomBound": "2199023255552",
-    "randomAttempts": 1,
+    "verifiedTotalWeight": "0",
+    "randomBound": "0",
+    "randomAttempts": 0,
     "rejectedAttempts": 0,
     "consistencyVerified": true,
-    "hasWinner": true,
+    "hasWinner": false,
     "handles": {
-      "aggregateWeight": "0x88d4e6545701b0b9ef132de1ef200b195e772174e0ff0000000000aa36a70600",
-      "randomTarget": "0xfc1c8fcab516ba53cf9ed041926d899dcc755c2596ff0000000000aa36a70600",
-      "prefix": "0x350541d253d25bcf54f4245a63864796e849c64f35ff0000000000aa36a70600"
+      "aggregateWeight": "0x396cedfcc724700354a441e75814e45b99d2a57dddff0000000000aa36a70600",
+      "randomTarget": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "prefix": "0xd285d82f59f81cc81abe20718902188755fd49b333ff0000000000aa36a70600"
     },
     "steps": [
       {
+        "step": "save:participant-b",
+        "txHash": "0x8ccd0798da17d2db224e9550488e408a69d0276fb055a50189ed07dc37dfb83d",
+        "at": "2026-09-05T14:40:26.139Z",
+        "gasUsed": "1542313"
+      },
+      {
+        "step": "save:participant-c",
+        "txHash": "0xd9fc3ee5893a58cc656e7da380214797240f18716f7899b1e7b0b5b13a8dc703",
+        "at": "2026-09-05T14:41:50.646Z",
+        "gasUsed": "1542309"
+      },
+      {
+        "step": "save:participant-d",
+        "txHash": "0x9ac57aaee8e43ce3b9818aee4d6dbd56989fea9646d5d8ba2edc172cf8457175",
+        "at": "2026-09-05T14:43:26.612Z",
+        "gasUsed": "1542309"
+      },
+      {
+        "step": "save:participant-e",
+        "txHash": "0x0ed3e8788fade3855084e42e07fd3632e25a36341e518248b7a909769b40df28",
+        "at": "2026-09-05T14:45:01.943Z",
+        "gasUsed": "1542289"
+      },
+      {
+        "step": "save:participant-f",
+        "txHash": "0x5c7d61a6b3fbbd66dfdaa615c6cd5afc12add292c151ff314c02f1f917c20e9d",
+        "at": "2026-09-05T14:46:15.350Z",
+        "gasUsed": "1542309"
+      },
+      {
         "step": "prize:deposit",
-        "txHash": "0xf6edc9588ac711bf762262d713bea63f13c76c7e0948fe55566e0cf16bcd1ba2",
-        "at": "2026-09-05T14:53:50.340Z"
+        "txHash": "0xb2c07ae674be9e5b35fd55bee0c4c0160640f5c528f8a8e6988cc0c75eb66aea",
+        "at": "2026-09-05T14:47:38.289Z"
       },
       {
         "step": "prize:fundDraw",
-        "txHash": "0xca63df709f6f33f17a4762d40239fad1d8be5a3fbccef1629dc1761c8af50e1d",
-        "at": "2026-09-05T14:53:50.340Z"
+        "txHash": "0x275d17d40a3d67105afe0a253ea9a7a768fe37d2117fa425add31bd2173f53b5",
+        "at": "2026-09-05T14:47:38.289Z"
       },
       {
         "step": "closeDraw",
-        "txHash": "0xd522d5ea6a6c8ea0b997ff160cd1e1a55df1eb54d9ba996edd2096418891c7d3",
-        "at": "2026-09-05T15:01:39.130Z",
-        "gasUsed": "451867",
+        "txHash": "0x23ca2fdb8671d1ad0dc59d0329abb1e54943063ddf3487d748989d21447bd92c",
+        "at": "2026-09-05T14:48:14.207Z",
+        "gasUsed": "372023",
         "detail": {
-          "drawId": "2"
+          "drawId": "1"
         }
       },
       {
         "step": "submitTotalProof",
-        "txHash": "0x0dac760575021930934f5b379aa211ee675d8d0bbe5a41516ac33f0e73c1d4ac",
-        "at": "2026-09-05T15:01:49.152Z",
-        "gasUsed": "405356",
+        "txHash": "0xac067e07af3bb7ad8673e79a32eb8a31e3507831483653e416d6618148dc82b5",
+        "at": "2026-09-05T14:48:25.559Z",
+        "gasUsed": "362059",
         "detail": {
-          "totalWeight": "1406400000000",
-          "handle": "0x88d4e6545701b0b9ef132de1ef200b195e772174e0ff0000000000aa36a70600"
-        }
-      },
-      {
-        "step": "generateRandomCandidate",
-        "txHash": "0xed4de0ccdc09983d9d794dac6d0dd757cdc0059b8f336259d2950b979361012e",
-        "at": "2026-09-05T15:02:01.587Z",
-        "gasUsed": "225848",
-        "detail": {
-          "attempt": "1"
-        }
-      },
-      {
-        "step": "submitAcceptanceProof",
-        "txHash": "0xcefc051924914aeb9377ae87b35fae69ca5eb609e867e38f1a61f77dc6d9faac",
-        "at": "2026-09-05T15:02:13.501Z",
-        "gasUsed": "358004",
-        "detail": {
-          "attempt": "1",
-          "accepted": true,
-          "handle": "0x0ff42658388ead60cc5792ed210dac42d6b745aa51ff0000000000aa36a70000"
-        }
-      },
-      {
-        "step": "processSelectionBatch(5)",
-        "txHash": "0x419cbd39d777824c854692a22307534c7ba165a62bfb0c3751c32d8fbfc3e702",
-        "at": "2026-09-05T15:02:37.893Z",
-        "gasUsed": "2294714",
-        "detail": {
-          "batchSize": 5
-        }
-      },
-      {
-        "step": "processSelectionBatch(1)",
-        "txHash": "0x3d5cc4de4eb17f6723d4c922e02745ab40dc5c29012c72f6c9168d4578a71804",
-        "at": "2026-09-05T15:02:50.337Z",
-        "gasUsed": "653306",
-        "detail": {
-          "batchSize": 1
-        }
-      },
-      {
-        "step": "submitConsistencyProof",
-        "txHash": "0xfca1224da7b78c645731493c101e420d689f99c59fdaabb8fdc59ea65271526c",
-        "at": "2026-09-05T15:04:26.594Z",
-        "gasUsed": "355604",
-        "detail": {
-          "consistent": true,
-          "handle": "0xe2ff48e6c4214ceba7970402c4503adc90f0f0d544ff0000000000aa36a70000"
+          "totalWeight": "0",
+          "handle": "0x396cedfcc724700354a441e75814e45b99d2a57dddff0000000000aa36a70600"
         }
       }
     ],
-    "latencyMs": 613436
+    "latencyMs": 27506
   },
   "results": [
     {
@@ -153,7 +135,7 @@
       "role": "participant-a",
       "creditUnits": "0",
       "won": false,
-      "claimTxHash": "0xa961cb4a5d3f45ddc5f77af189134448b39b8a33a443348a0267f76f6fa3c0f4",
+      "claimTxHash": "0x54b8c4734181d900e26d6db26f8699a5f3e40d146cf08c1591a981724a762955",
       "principalBeforeUnits": "100000000",
       "principalAfterUnits": "100000000",
       "principalConserved": true
@@ -161,9 +143,9 @@
     {
       "address": "0x4D109eC24E209D16Eb89210bA5a916e16775B4f9",
       "role": "participant-b",
-      "creditUnits": "120000000",
-      "won": true,
-      "claimTxHash": "0xddcdd67d4cbe96d5e06b62bf7b2eee46e2a9756b7fbc0ea0c62ed6122c744883",
+      "creditUnits": "0",
+      "won": false,
+      "claimTxHash": "0xe7def2a34ac3331bca7c011678711b42c29dd4ae7ba4ab9a2849f97cb3eef9b9",
       "principalBeforeUnits": "250000000",
       "principalAfterUnits": "250000000",
       "principalConserved": true
@@ -173,7 +155,7 @@
       "role": "participant-c",
       "creditUnits": "0",
       "won": false,
-      "claimTxHash": "0xaf7e79287675f1ba64e4675c8ccd2bcd76da25ec696d07c523b4deb4c9fc4301",
+      "claimTxHash": "0x98317f4afc31be367d66cf1914d001e64ec2681b0fabcd8a3715558d671913c4",
       "principalBeforeUnits": "50000000",
       "principalAfterUnits": "50000000",
       "principalConserved": true
@@ -183,7 +165,7 @@
       "role": "participant-d",
       "creditUnits": "0",
       "won": false,
-      "claimTxHash": "0xf5797631bc61b53c17ef1dd86a54fef8b4bbe0d4b1b9d884de3179dd90f69c48",
+      "claimTxHash": "0xcdc7aa96c3ef9c8a361135154708da18ea97b55cd8a175cc9c1569a19fb1b5cf",
       "principalBeforeUnits": "500000000",
       "principalAfterUnits": "500000000",
       "principalConserved": true
@@ -193,7 +175,7 @@
       "role": "participant-e",
       "creditUnits": "0",
       "won": false,
-      "claimTxHash": "0xe58cfec2961ea4eef2406838371730d60c007608b1d3f09d67e7197abc006348",
+      "claimTxHash": "0x669e505f70f393307ae1ffe1948953482ed2c17cdfbc171f5c65c46ae1732e81",
       "principalBeforeUnits": "75000000",
       "principalAfterUnits": "75000000",
       "principalConserved": true
@@ -203,7 +185,7 @@
       "role": "participant-f",
       "creditUnits": "0",
       "won": false,
-      "claimTxHash": "0xcc9c4dc23e29e69c7be878d1faa9e921332401dab783855b66d328102fe898b8",
+      "claimTxHash": "0xbb122a47d03de0410c59d68f9e57acac110febfa37ac5ef9c5c863103ccefbb3",
       "principalBeforeUnits": "300000000",
       "principalAfterUnits": "300000000",
       "principalConserved": true
@@ -212,7 +194,7 @@
   "confidentialityChecks": [
     {
       "claim": "public decryption of the random target",
-      "outcome": "refused: Handle 0xfc1c8fcab516ba53cf9ed041926d899dcc755c2596ff0000000000aa36a70600 is not allowed for public decryption"
+      "outcome": "refused: Handle 0x0000000000000000000000000000000000000000000000000000000000000000 is not allowed for public decryption"
     },
     {
       "claim": "public decryption of a participant's savings balance",
@@ -228,13 +210,17 @@
     },
     {
       "claim": "public decryption of the frozen aggregate weight",
-      "outcome": "allowed by design, value 1406400000000 matches the on-chain verified total"
+      "outcome": "allowed by design, value 0 matches the on-chain verified total"
     }
   ],
   "gasTotals": {
-    "prize-deposit": "360107",
-    "prize-fund": "977779",
-    "claim": "2483774"
+    "faucet": "258816",
+    "approve": "231801",
+    "wrap": "1836282",
+    "save": "7711529",
+    "prize-deposit": "385192",
+    "prize-fund": "1002868",
+    "claim": "2711256"
   },
-  "finishedAt": "2026-09-05T15:06:16.195Z"
+  "finishedAt": "2026-09-05T14:50:18.347Z"
 }

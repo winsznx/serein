@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { parseAbi } from "viem";
 import { useWriteContract } from "wagmi";
 
 import { TxStatus } from "@/components/tx-status";
@@ -8,7 +9,13 @@ import { Badge, Button, ButtonLink, Card, StatusPill } from "@/components/ui";
 import { ConnectButton, TestnetNotice, useWalletStatus } from "@/components/wallet";
 import { deployment } from "@/lib/chain";
 import { getFheInstance, toHex } from "@/lib/fhe/sdk";
-import { formatCountdown, formatTokenAmount, parseTokenAmount, TOKEN_SYMBOL } from "@/lib/format";
+import {
+  formatCountdown,
+  formatTokenAmount,
+  parseTokenAmount,
+  TOKEN_DECIMALS,
+  TOKEN_SYMBOL,
+} from "@/lib/format";
 import { ABIS, useDeployment, useWalletSnapshot } from "@/lib/hooks/use-serein";
 import { useTxFlow } from "@/lib/hooks/use-tx-flow";
 
@@ -60,7 +67,7 @@ export default function SavePage() {
         </p>
       </header>
 
-      <FaucetStep wallet={wallet} />
+      <FaucetStep wallet={wallet} address={address} />
       <WrapStep wallet={wallet} address={address} />
       <SaveStep wallet={wallet} address={address} />
 
@@ -99,31 +106,59 @@ function StepShell({
   );
 }
 
-function FaucetStep({ wallet }: { wallet: Wallet }) {
+/**
+ * Zama's registered USDC mock has a plain, public `mint(address,uint256)` — anyone can mint to any
+ * address, capped at 1,000,000 tokens per call, with no per-address cooldown or lifetime allowance.
+ * Serein's own `TestUSDC` (used on chains where no canonical Zama pair exists to resolve) instead
+ * exposes a named `claim()` with both, since an open faucet on a token Serein itself controls needed
+ * a guard against one address inflating the pool's aggregate weight. Same intent — "give a fresh
+ * wallet test tokens" — different mechanics, so the button below has two implementations rather than
+ * one that assumes a cooldown state that Zama's mock does not have.
+ */
+const ZAMA_MOCK_MINT_ABI = parseAbi(["function mint(address account, uint256 amount) external"]);
+const FAUCET_AMOUNT = 1_000n * 10n ** BigInt(TOKEN_DECIMALS);
+
+function FaucetStep({ wallet, address }: { wallet: Wallet; address: `0x${string}` }) {
   const { writeContractAsync } = useWriteContract();
   const flow = useTxFlow();
   const addresses = deployment().addresses!;
+  const { isZamaCanonical } = deployment();
 
-  const cooldown = Number(wallet.faucetCooldown);
-  const capped = wallet.faucetRemaining === 0n;
+  // The canonical Zama mock has no cooldown/allowance state to read, so those two contract calls
+  // fail (harmlessly — `useReadContracts` is called with `allowFailure: true`) and fall back to 0,
+  // which would otherwise read as "on cooldown" / "capped" forever. Only the legacy TestUSDC path
+  // has a real cooldown or cap to show.
+  const cooldown = isZamaCanonical ? 0 : Number(wallet.faucetCooldown);
+  const capped = isZamaCanonical ? false : wallet.faucetRemaining === 0n;
 
   return (
     <StepShell
       index={1}
       title="Get test USDC"
       done={wallet.underlyingBalance > 0n}
-      description="A public faucet token with no monetary value. One claim every four hours."
+      description={
+        isZamaCanonical
+          ? "Zama's registered Sepolia mock USDC. A public mint, no cooldown."
+          : "A public faucet token with no monetary value. One claim every four hours."
+      }
     >
       <div className="flex flex-wrap items-center gap-4">
         <Button
           onClick={() =>
             void flow.run({
               send: () =>
-                writeContractAsync({
-                  address: addresses.underlyingToken,
-                  abi: ABIS.underlying,
-                  functionName: "claim",
-                }),
+                isZamaCanonical
+                  ? writeContractAsync({
+                      address: addresses.underlyingToken,
+                      abi: ZAMA_MOCK_MINT_ABI,
+                      functionName: "mint",
+                      args: [address, FAUCET_AMOUNT],
+                    })
+                  : writeContractAsync({
+                      address: addresses.underlyingToken,
+                      abi: ABIS.underlying,
+                      functionName: "claim",
+                    }),
               onConfirmed: () => wallet.refetch(),
             })
           }

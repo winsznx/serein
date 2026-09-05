@@ -1,6 +1,7 @@
 import { FhevmType } from "@fhevm/hardhat-plugin";
 import { ethers, fhevm } from "hardhat";
 
+import { ensureUnderlyingBalance } from "./lib/faucet";
 import { addressOf, loadManifest } from "./lib/manifest";
 import { initFhevm } from "./lib/relayer";
 
@@ -54,16 +55,22 @@ async function main(): Promise<void> {
   // 1. Public faucet.
   const balance = await underlying.balanceOf(alice.address);
   console.log(`1. faucet — current public balance ${ethers.formatUnits(balance, 6)} tUSDC`);
-  if (balance === 0n) {
-    const tx = await underlying.connect(alice).claim();
-    console.log(`   claim ${tx.hash}`);
-    await tx.wait();
+  const amount = 100_000_000n; // 100 tUSDC
+  const faucetReceipt = await ensureUnderlyingBalance(
+    manifest,
+    underlyingAddress,
+    alice,
+    alice.address,
+    amount,
+    balance,
+  );
+  if (faucetReceipt) {
+    console.log(`   claim ${faucetReceipt.hash}`);
   } else {
     console.log("   already funded, skipping");
   }
 
   // 2. Wrap into the confidential token. Public amount, by construction.
-  const amount = 100_000_000n; // 100 tUSDC
   console.log(`\n2. wrap ${ethers.formatUnits(amount, 6)} tUSDC into ptUSDC`);
   const approveTx = await underlying.connect(alice).approve(tokenAddress, amount);
   await approveTx.wait();

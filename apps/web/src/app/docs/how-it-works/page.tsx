@@ -126,7 +126,7 @@ P(r = x | r < T) = (1/B) / (T/B) = 1/T`}</CodeBlock>
           items={[
             {
               title: "Get test USDC",
-              body: "A faucet token with no monetary value. One claim every four hours.",
+              body: "A public test token with no monetary value, minted directly to your wallet.",
             },
             {
               title: "Make it private",

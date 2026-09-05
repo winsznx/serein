@@ -1,0 +1,35 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "commit": "d61f0025eebdd96d522e5cb168b19fc598ccf80c",
+  "deployedAt": "2026-08-24T23:04:27.260Z",
+  "deployer": "0x27B8E8D9593727a2ebE3e4aB10E654316034fD9F",
+  "drawDurationSeconds": "900",
+  "contracts": {
+    "TestUSDC": {
+      "address": "0x45b8eFea1208dA64Bfa7f705c714FBDc6e44312B",
+      "deployedAtBlock": 11560138,
+      "txHash": "0x68870c21a1db7bdbeec9da86c5a2ad807e8f160f3cdb2c488822005d554a759e"
+    },
+    "ConfidentialUSDC": {
+      "address": "0x9945fF771e3979f1E9D5938Dff459B560E32A833",
+      "deployedAtBlock": 11560139,
+      "txHash": "0x76d7bf73ece4e66624d767873b92d4f025427f3c1b719ebd3ea867c2d0be6637"
+    },
+    "SereinPrizeReserve": {
+      "address": "0xb722f8E6903a0E20790C2456d52Ff69F6A564C78",
+      "deployedAtBlock": 11560140,
+      "txHash": "0x43b0e4d8e6f871f9278f52262ca272d9f13dddd2c24919096e2482b844203510"
+    },
+    "SereinPool": {
+      "address": "0x99eEAeAB7B8c1c9F953D4B266CA0691b9E241eaa",
+      "deployedAtBlock": 11560141,
+      "txHash": "0xbbbb1166d5f7f26915f9cbe3fa06be73a177b9256bea0e5ab99aba0c1b57a56a"
+    },
+    "MockPrizeSource": {
+      "address": "0xae8e6ab63a90CF37692FF38593A5Ec2ac55438Da",
+      "deployedAtBlock": 11560143,
+      "txHash": "0xd27ee54b64dfcfa8f6ce878e5a3e4d140f4c7c2038ec45cdd57c35bef9a38c0b"
+    }
+  }
+}

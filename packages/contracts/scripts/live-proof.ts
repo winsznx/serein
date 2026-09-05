@@ -6,6 +6,7 @@ import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signer
 import { ethers, fhevm } from "hardhat";
 
 import { advanceDraw, closeIfDue, DRAW_STATUS_NAMES, type StepLog } from "./lib/draw-runner";
+import { ensureUnderlyingBalance } from "./lib/faucet";
 import { addressOf, loadManifest } from "./lib/manifest";
 import { isTransientRelayerError, withRelayerRetry, initFhevm } from "./lib/relayer";
 import type {
@@ -187,11 +188,17 @@ async function main(): Promise<void> {
     if (already !== ethers.ZeroHash) {
       console.log(`   ${role} already saved, skipping deposit`);
     } else {
-      if ((await underlying.balanceOf(signer.address)) < amount) {
-        const claimTx = await underlying.connect(signer).claim();
-        const receipt = await claimTx.wait();
-        track("faucet", receipt?.gasUsed ?? 0n);
-        console.log(`   ${role} faucet   ${claimTx.hash}`);
+      const faucetReceipt = await ensureUnderlyingBalance(
+        manifest,
+        underlyingAddress,
+        signer,
+        signer.address,
+        amount,
+        await underlying.balanceOf(signer.address),
+      );
+      if (faucetReceipt) {
+        track("faucet", faucetReceipt.gasUsed);
+        console.log(`   ${role} faucet   ${faucetReceipt.hash}`);
       }
 
       const approveTx = await underlying.connect(signer).approve(tokenAddress, amount);
@@ -240,10 +247,16 @@ async function main(): Promise<void> {
     const prizeUnderlying = 200n * UNIT;
     const allocation = 120n * UNIT;
 
-    if ((await underlying.balanceOf(deployer.address)) < prizeUnderlying) {
-      const claimTx = await underlying.connect(deployer).claim();
-      await claimTx.wait();
-      console.log(`   deployer faucet ${claimTx.hash}`);
+    const deployerFaucet = await ensureUnderlyingBalance(
+      manifest,
+      underlyingAddress,
+      deployer,
+      deployer.address,
+      prizeUnderlying,
+      await underlying.balanceOf(deployer.address),
+    );
+    if (deployerFaucet) {
+      console.log(`   deployer faucet ${deployerFaucet.hash}`);
     }
 
     const approveTx = await underlying.connect(deployer).approve(sourceAddress, prizeUnderlying);
