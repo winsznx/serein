@@ -44,6 +44,12 @@ async function main(): Promise<void> {
   const token = await ethers.getContractAt("ConfidentialUSDC", tokenAddress);
   const underlying = await ethers.getContractAt("TestUSDC", underlyingAddress);
 
+  // Display labels only — the "ConfidentialUSDC"/"TestUSDC" manifest slots hold Zama's own
+  // registered cUSDCMock/USDCMock on the canonical deployment, not a Serein-owned pair.
+  const isZamaCanonical = manifest.tokenSource === "zama-canonical";
+  const confidentialSymbol = isZamaCanonical ? "cUSDCMock" : "ptUSDC";
+  const underlyingSymbol = isZamaCanonical ? "USDCMock" : "tUSDC";
+
   const reveal = async (): Promise<bigint> => {
     const handle = await pool.confidentialBalanceOf(saver.address);
     if (handle === ethers.ZeroHash) return 0n;
@@ -79,16 +85,18 @@ async function main(): Promise<void> {
   console.log(`  gas     ${ethers.formatEther(await ethers.provider.getBalance(saver))} ETH\n`);
 
   const opening = await reveal();
-  console.log(`1. opening principal: ${ethers.formatUnits(opening, 6)} ptUSDC`);
+  console.log(`1. opening principal: ${ethers.formatUnits(opening, 6)} ${confidentialSymbol}`);
   if (opening === 0n) throw new Error("nothing to withdraw");
 
   const partial = opening / 4n;
-  console.log(`\n2. withdrawing ${ethers.formatUnits(partial, 6)} ptUSDC (a quarter)`);
+  console.log(
+    `\n2. withdrawing ${ethers.formatUnits(partial, 6)} ${confidentialSymbol} (a quarter)`,
+  );
   const partialTx = await withdraw(partial);
   console.log(`   ${partialTx.hash}  gas ${partialTx.gasUsed}`);
 
   const afterPartial = await reveal();
-  console.log(`   principal now: ${ethers.formatUnits(afterPartial, 6)} ptUSDC`);
+  console.log(`   principal now: ${ethers.formatUnits(afterPartial, 6)} ${confidentialSymbol}`);
   const partialExact = afterPartial === opening - partial;
   console.log(`   exact: ${partialExact}`);
   if (!partialExact) {
@@ -98,12 +106,14 @@ async function main(): Promise<void> {
   // Ask for far more than remains. A reverting contract would leak the balance through the failure;
   // this one takes exactly what is there.
   const absurd = afterPartial * 1_000n;
-  console.log(`\n3. over-withdrawing ${ethers.formatUnits(absurd, 6)} ptUSDC (1000x what remains)`);
+  console.log(
+    `\n3. over-withdrawing ${ethers.formatUnits(absurd, 6)} ${confidentialSymbol} (1000x what remains)`,
+  );
   const clampTx = await withdraw(absurd);
   console.log(`   ${clampTx.hash}  gas ${clampTx.gasUsed}`);
 
   const afterClamp = await reveal();
-  console.log(`   principal now: ${ethers.formatUnits(afterClamp, 6)} ptUSDC`);
+  console.log(`   principal now: ${ethers.formatUnits(afterClamp, 6)} ${confidentialSymbol}`);
   console.log(`   clamped to the balance rather than reverting: ${afterClamp === 0n}`);
   if (afterClamp !== 0n) throw new Error(`expected 0 after full exit, got ${afterClamp}`);
 
@@ -112,11 +122,15 @@ async function main(): Promise<void> {
   //    finalize it into plain, public USDC in the saver's own wallet.
   // ---------------------------------------------------------------------------------------------
   const wrappedBalance = await revealWrapped();
-  console.log(`\n4. confidential (wrapper) balance now held: ${ethers.formatUnits(wrappedBalance, 6)} ptUSDC`);
+  console.log(
+    `\n4. confidential (wrapper) balance now held: ${ethers.formatUnits(wrappedBalance, 6)} ${confidentialSymbol}`,
+  );
   if (wrappedBalance === 0n) throw new Error("nothing to unwrap");
 
   const underlyingBefore = await underlying.balanceOf(saver.address);
-  console.log(`   public USDC balance before unwrap: ${ethers.formatUnits(underlyingBefore, 6)} tUSDC`);
+  console.log(
+    `   public USDC balance before unwrap: ${ethers.formatUnits(underlyingBefore, 6)} ${underlyingSymbol}`,
+  );
 
   const unwrapInput = await withRelayerRetry(
     () => fhevm.createEncryptedInput(tokenAddress, saver.address).add64(wrappedBalance).encrypt(),
@@ -136,13 +150,20 @@ async function main(): Promise<void> {
   const unwrapRequestedTopic = token.interface.getEvent("UnwrapRequested")!.topicHash;
   const requestLog = unwrapReceipt!.logs.find((log) => log.topics[0] === unwrapRequestedTopic);
   if (!requestLog) throw new Error("no UnwrapRequested event in the unwrap transaction");
-  const parsed = token.interface.decodeEventLog("UnwrapRequested", requestLog.data, requestLog.topics);
+  const parsed = token.interface.decodeEventLog(
+    "UnwrapRequested",
+    requestLog.data,
+    requestLog.topics,
+  );
   const unwrapRequestId = parsed.unwrapRequestId as string;
   console.log(`   request id ${unwrapRequestId}`);
 
   const unwrapAmountHandle = await token.unwrapAmount(unwrapRequestId);
-  const { value: unwrapAmountClear, proof: unwrapProof } = await publicDecryptNumber(unwrapAmountHandle);
-  console.log(`   KMS-decrypted amount: ${ethers.formatUnits(unwrapAmountClear, 6)} tUSDC`);
+  const { value: unwrapAmountClear, proof: unwrapProof } =
+    await publicDecryptNumber(unwrapAmountHandle);
+  console.log(
+    `   KMS-decrypted amount: ${ethers.formatUnits(unwrapAmountClear, 6)} ${underlyingSymbol}`,
+  );
 
   const finalizeTx = await token
     .connect(saver)
@@ -151,7 +172,9 @@ async function main(): Promise<void> {
   console.log(`\n6. unwrap finalized   ${finalizeTx.hash}  gas ${finalizeReceipt?.gasUsed}`);
 
   const underlyingAfter = await underlying.balanceOf(saver.address);
-  console.log(`   public USDC balance after unwrap:  ${ethers.formatUnits(underlyingAfter, 6)} tUSDC`);
+  console.log(
+    `   public USDC balance after unwrap:  ${ethers.formatUnits(underlyingAfter, 6)} ${underlyingSymbol}`,
+  );
   const unwrapExact = underlyingAfter - underlyingBefore === unwrapAmountClear;
   console.log(`   received exactly the unwrapped amount: ${unwrapExact}`);
   if (!unwrapExact) {

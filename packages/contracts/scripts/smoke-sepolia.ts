@@ -24,6 +24,12 @@ async function main(): Promise<void> {
   const tokenAddress = addressOf(manifest, "ConfidentialUSDC");
   const underlyingAddress = addressOf(manifest, "TestUSDC");
 
+  // Display labels only — the "ConfidentialUSDC"/"TestUSDC" manifest slots hold Zama's own
+  // registered cUSDCMock/USDCMock on the canonical deployment, not a Serein-owned pair.
+  const isZamaCanonical = manifest.tokenSource === "zama-canonical";
+  const confidentialSymbol = isZamaCanonical ? "cUSDCMock" : "ptUSDC";
+  const underlyingSymbol = isZamaCanonical ? "USDCMock" : "tUSDC";
+
   // Tests get the plugin initialised for them; a `hardhat run` script has to ask.
   await initFhevm(fhevm);
 
@@ -47,15 +53,19 @@ async function main(): Promise<void> {
     const started = Date.now();
     const revealed = await fhevm.userDecryptEuint(FhevmType.euint64, existing, poolAddress, alice);
     console.log(`   handle ${existing}`);
-    console.log(`   value  ${ethers.formatUnits(revealed, 6)} ptUSDC (${Date.now() - started}ms)`);
+    console.log(
+      `   value  ${ethers.formatUnits(revealed, 6)} ${confidentialSymbol} (${Date.now() - started}ms)`,
+    );
     console.log(`\nLive relayer path works end to end.`);
     return;
   }
 
   // 1. Public faucet.
   const balance = await underlying.balanceOf(alice.address);
-  console.log(`1. faucet — current public balance ${ethers.formatUnits(balance, 6)} tUSDC`);
-  const amount = 100_000_000n; // 100 tUSDC
+  console.log(
+    `1. faucet — current public balance ${ethers.formatUnits(balance, 6)} ${underlyingSymbol}`,
+  );
+  const amount = 100_000_000n; // 100 units of the underlying
   const faucetReceipt = await ensureUnderlyingBalance(
     manifest,
     underlyingAddress,
@@ -71,7 +81,9 @@ async function main(): Promise<void> {
   }
 
   // 2. Wrap into the confidential token. Public amount, by construction.
-  console.log(`\n2. wrap ${ethers.formatUnits(amount, 6)} tUSDC into ptUSDC`);
+  console.log(
+    `\n2. wrap ${ethers.formatUnits(amount, 6)} ${underlyingSymbol} into ${confidentialSymbol}`,
+  );
   const approveTx = await underlying.connect(alice).approve(tokenAddress, amount);
   await approveTx.wait();
   console.log(`   approve ${approveTx.hash}`);
@@ -107,7 +119,7 @@ async function main(): Promise<void> {
   const decryptStarted = Date.now();
   const revealed = await fhevm.userDecryptEuint(FhevmType.euint64, handle, poolAddress, alice);
   console.log(
-    `   value   ${ethers.formatUnits(revealed, 6)} ptUSDC (${Date.now() - decryptStarted}ms)`,
+    `   value   ${ethers.formatUnits(revealed, 6)} ${confidentialSymbol} (${Date.now() - decryptStarted}ms)`,
   );
 
   if (revealed !== amount) {

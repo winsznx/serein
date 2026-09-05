@@ -91,6 +91,12 @@ async function main(): Promise<void> {
   const tokenAddress = addressOf(manifest, "ConfidentialUSDC");
   const underlyingAddress = addressOf(manifest, "TestUSDC");
 
+  // Display labels only — the "ConfidentialUSDC"/"TestUSDC" manifest slots hold Zama's own
+  // registered cUSDCMock/USDCMock on the canonical deployment, not a Serein-owned pair.
+  const isZamaCanonical = manifest.tokenSource === "zama-canonical";
+  const confidentialSymbol = isZamaCanonical ? "cUSDCMock" : "ptUSDC";
+  const underlyingSymbol = isZamaCanonical ? "USDCMock" : "tUSDC";
+
   const pool = (await ethers.getContractAt("SereinPool", poolAddress)) as unknown as SereinPool;
   const reserve = (await ethers.getContractAt(
     "SereinPrizeReserve",
@@ -264,7 +270,9 @@ async function main(): Promise<void> {
     const depositTx = await source.connect(deployer).deposit(prizeUnderlying);
     const depositReceipt = await depositTx.wait();
     track("prize-deposit", depositReceipt?.gasUsed ?? 0n);
-    console.log(`   deposit  ${depositTx.hash}  (public: ${prizeUnderlying / UNIT} tUSDC wrapped)`);
+    console.log(
+      `   deposit  ${depositTx.hash}  (public: ${prizeUnderlying / UNIT} ${underlyingSymbol} wrapped)`,
+    );
 
     const prizeInput = await withRelayerRetry(
       () => fhevm.createEncryptedInput(sourceAddress, deployer.address).add64(allocation).encrypt(),
@@ -302,7 +310,9 @@ async function main(): Promise<void> {
             { label: `reveal principal for ${role}`, log: (m) => console.log(m) },
           );
     principalBefore.set(signer.address, value);
-    console.log(`   ${role} principal before draw: ${ethers.formatUnits(value, 6)} ptUSDC`);
+    console.log(
+      `   ${role} principal before draw: ${ethers.formatUnits(value, 6)} ${confidentialSymbol}`,
+    );
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -429,7 +439,7 @@ async function main(): Promise<void> {
 
     const won = credit > 0n;
     console.log(
-      `   ${role} result: ${won ? `won ${ethers.formatUnits(credit, 6)} ptUSDC` : "no prize this draw"}`,
+      `   ${role} result: ${won ? `won ${ethers.formatUnits(credit, 6)} ${confidentialSymbol}` : "no prize this draw"}`,
     );
 
     let claimTxHash: string | undefined;

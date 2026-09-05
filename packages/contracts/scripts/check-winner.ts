@@ -47,6 +47,12 @@ async function main(): Promise<void> {
     Boolean(entry.signer),
   );
 
+  // The manifest's "ConfidentialUSDC" slot holds Zama's own registered cUSDCMock on the canonical
+  // deployment, not a Serein-owned token — printing "ptUSDC" there would be exactly the stale,
+  // pre-migration name that got fixed everywhere else. See lib/format.ts on the frontend for the
+  // same distinction.
+  const tokenSymbol = manifest.tokenSource === "zama-canonical" ? "cUSDCMock" : "ptUSDC";
+
   console.log(`Checking draw #${drawId} on ${manifest.network}\n`);
 
   let winner: { role: string; address: string; claimed: boolean } | null = null;
@@ -70,7 +76,7 @@ async function main(): Promise<void> {
     const wonThis = credit > 0n;
     console.log(
       `${role.padEnd(16)} ${signer.address}  ` +
-        `${wonThis ? `WON ${ethers.formatUnits(credit, 6)} ptUSDC` : "no prize"}  ` +
+        `${wonThis ? `WON ${ethers.formatUnits(credit, 6)} ${tokenSymbol}` : "no prize"}  ` +
         `${claimed ? "(already claimed)" : "(unclaimed)"}`,
     );
     if (wonThis) winner = { role, address: signer.address, claimed };
