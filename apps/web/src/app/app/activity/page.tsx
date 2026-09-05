@@ -7,7 +7,13 @@ import { usePublicClient } from "wagmi";
 import { Card, StatusPill } from "@/components/ui";
 import { ConnectButton, useWalletStatus } from "@/components/wallet";
 import { deployment, explorerTx } from "@/lib/chain";
-import { estimateBlockForTimestamp, fetchLogsInWindows } from "@/lib/chain-logs";
+import {
+  estimateBlockForTimestamp,
+  fetchLogsInWindows,
+  readLogCache,
+  writeLogCache,
+  type LogCache,
+} from "@/lib/chain-logs";
 import { getDeployment, SereinPoolAbi } from "@serein/protocol-sdk";
 
 /**
@@ -27,6 +33,11 @@ import { getDeployment, SereinPoolAbi } from "@serein/protocol-sdk";
  * ran; it silently failed and produced "Nothing yet" for wallets with real history. Every deposit
  * writes an observation, so `observationAt(address, 0)` is a single cheap read that pins down when
  * this wallet's history actually begins, without scanning for it.
+ *
+ * That covers the first visit. A `localStorage` cache (`lib/chain-logs.ts`) covers every visit
+ * after it: once a range has been scanned, only the blocks since are ever fetched again. That is a
+ * per-browser cache, not a server one — it does not become a second, unverified source of truth,
+ * since every row in it was itself read from the chain the first time it appeared.
  */
 const EVENTS = [
   {
@@ -62,6 +73,17 @@ interface Row {
   blockNumber: bigint;
 }
 
+/** The JSON-safe shape a `Row` is stored as — `bigint` doesn't survive `JSON.stringify`. */
+type CachedRow = Omit<Row, "blockNumber"> & { blockNumber: string };
+
+function toCachedRow(row: Row): CachedRow {
+  return { ...row, blockNumber: row.blockNumber.toString() };
+}
+
+function fromCachedRow(row: CachedRow): Row {
+  return { ...row, blockNumber: BigInt(row.blockNumber) };
+}
+
 export default function ActivityPage() {
   const { address, isConnected, isRestoring } = useWalletStatus();
   const publicClient = usePublicClient();
@@ -91,31 +113,49 @@ export default function ActivityPage() {
       // scan below would legitimately come back empty, so skip it rather than pay for it.
       if (observationCount === 0n) return [];
 
-      const [firstObservation, latestBlock] = await Promise.all([
-        publicClient.readContract({
-          address: poolAddress,
-          abi: SereinPoolAbi,
-          functionName: "observationAt",
-          args: [address, 0n],
-        }),
-        publicClient.getBlock({ blockTag: "latest" }),
-      ]);
-      const firstTimestamp = firstObservation[0];
+      // A per-browser cache of rows already found, keyed to this exact deployment and wallet. A
+      // return visit only has to fetch what happened after `lastBlock` — not the wallet's whole
+      // history again. This is a private client-side cache, not a server one: everything shown is
+      // still re-derived from a chain read the first time it's seen, so there is no new "trust the
+      // cache instead of the chain" dependency, only less repeat work.
+      const cacheKey = `serein:activity:${state.commit}:${address.toLowerCase()}`;
+      const cached = readLogCache<CachedRow>(cacheKey);
 
-      const deployedBlock = await publicClient.getBlock({ blockNumber: deployedAtBlock });
-      const estimatedFrom = estimateBlockForTimestamp(
-        firstTimestamp,
-        { block: deployedAtBlock, timestamp: deployedBlock.timestamp },
-        { block: latestBlock.number, timestamp: latestBlock.timestamp },
-      );
-      // Generous padding before the estimate, in case the first observation predates the wallet's
-      // first *event* by a block or two (registration and the first deposit land in the same
-      // transaction, but the estimate itself carries a small margin of error).
-      const startPadding = 300n;
-      const fromBlock =
-        estimatedFrom - startPadding > deployedAtBlock
-          ? estimatedFrom - startPadding
-          : deployedAtBlock;
+      const latestBlock = await publicClient.getBlock({ blockTag: "latest" });
+
+      let fromBlock: bigint;
+      if (cached) {
+        fromBlock = BigInt(cached.lastBlock) + 1n;
+        // Already fully caught up as of the last write — no reason to touch the RPC at all.
+        if (fromBlock > latestBlock.number) {
+          return cached.rows
+            .map(fromCachedRow)
+            .sort((a, b) => (a.blockNumber < b.blockNumber ? 1 : -1));
+        }
+      } else {
+        const [firstObservation, deployedBlock] = await Promise.all([
+          publicClient.readContract({
+            address: poolAddress,
+            abi: SereinPoolAbi,
+            functionName: "observationAt",
+            args: [address, 0n],
+          }),
+          publicClient.getBlock({ blockNumber: deployedAtBlock }),
+        ]);
+        const estimatedFrom = estimateBlockForTimestamp(
+          firstObservation[0],
+          { block: deployedAtBlock, timestamp: deployedBlock.timestamp },
+          { block: latestBlock.number, timestamp: latestBlock.timestamp },
+        );
+        // Generous padding before the estimate, in case the first observation predates the
+        // wallet's first *event* by a block or two (registration and the first deposit land in
+        // the same transaction, but the estimate itself carries a small margin of error).
+        const startPadding = 300n;
+        fromBlock =
+          estimatedFrom - startPadding > deployedAtBlock
+            ? estimatedFrom - startPadding
+            : deployedAtBlock;
+      }
 
       const [poolLogs, claimLogs] = await Promise.all([
         fetchLogsInWindows(
@@ -174,7 +214,17 @@ export default function ActivityPage() {
         });
       }
 
-      return rows.sort((a, b) => (a.blockNumber < b.blockNumber ? 1 : -1));
+      const merged = [...(cached?.rows.map(fromCachedRow) ?? []), ...rows].sort((a, b) =>
+        a.blockNumber < b.blockNumber ? 1 : -1,
+      );
+
+      const nextCache: LogCache<CachedRow> = {
+        lastBlock: latestBlock.number.toString(),
+        rows: merged.map(toCachedRow),
+      };
+      writeLogCache(cacheKey, nextCache);
+
+      return merged;
     },
   });
 

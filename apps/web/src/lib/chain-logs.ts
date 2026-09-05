@@ -102,3 +102,45 @@ export function estimateBlockForTimestamp(
   if (blockSpan <= 0n || timeSpan <= 0n) return latest.block;
   return anchor.block + ((targetTimestamp - anchor.timestamp) * blockSpan) / timeSpan;
 }
+
+/**
+ * A per-browser cache of already-found rows plus the block scanned up to, so a return visit
+ * re-fetches only what happened since — not the wallet's entire history again.
+ *
+ * This is deliberately `localStorage`, not a server table. A server-side cache would mean every
+ * visitor trusts *this app's* record of their history instead of the chain itself — exactly the
+ * second source of truth `use-serein.ts` argues against, and one this project doesn't get to unwind
+ * quietly for the sake of fewer requests. A private, per-browser cache keeps the same guarantee
+ * (everything shown is re-derived from a chain read, verifiable independently) while still avoiding
+ * the repeat work: only the delta since `lastBlock` is ever fetched from a live scan.
+ *
+ * `rows` are stored as whatever JSON-safe shape the caller already produced — this module doesn't
+ * know or care what a row means, only that it has one, plus the block number it came from.
+ */
+export interface LogCache<T> {
+  lastBlock: string;
+  rows: T[];
+}
+
+export function readLogCache<T>(key: string): LogCache<T> | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as LogCache<T>;
+    if (typeof parsed.lastBlock !== "string" || !Array.isArray(parsed.rows)) return null;
+    return parsed;
+  } catch {
+    // Private browsing, disabled storage, or a shape from an older version of this cache — treat
+    // it exactly like a first visit rather than letting a storage quirk break the page.
+    return null;
+  }
+}
+
+export function writeLogCache<T>(key: string, cache: LogCache<T>): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(cache));
+  } catch {
+    // Best-effort. A quota error or a blocked store just means the next visit re-scans, same as
+    // today's behavior with no cache at all — never worse, only sometimes not-faster.
+  }
+}
