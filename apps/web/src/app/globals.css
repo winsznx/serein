@@ -178,6 +178,74 @@
     }
   }
 
+  /*
+   * Ambient hero drift. Only the hero visual is allowed to loop continuously (per the landing
+   * refactor's motion budget) — everything else on the page reveals once and settles. Amplitudes
+   * are capped at single-digit pixels and scale never leaves 0.98–1.02, so the loop reads as the
+   * capsule breathing rather than bouncing. `prefers-reduced-motion` already collapses every
+   * animation's duration to 0.01ms globally, so no separate override is needed here.
+   */
+  .capsule-drift {
+    animation: capsule-drift 8s ease-in-out infinite;
+  }
+  .proof-slip-drift {
+    animation: capsule-drift 8s ease-in-out infinite;
+    animation-delay: -4s;
+  }
+  @keyframes capsule-drift {
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-6px) scale(1.015);
+    }
+  }
+  @keyframes particle-pulse {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  /*
+   * The landing's light-surface ambient layer: two soft violet blooms plus a barely-visible dot
+   * texture, so the hero and the sections that follow it on white don't read as a flat canvas.
+   * Opacity is capped at 0.05 for the dots — enough to add texture, low enough to disappear the
+   * moment there is text over it.
+   */
+  .landing-canvas {
+    background:
+      radial-gradient(
+        900px 540px at 78% 10%,
+        color-mix(in srgb, var(--color-violet) 16%, transparent),
+        transparent 62%
+      ),
+      radial-gradient(
+        720px 460px at 15% -10%,
+        color-mix(in srgb, var(--color-violet) 8%, transparent),
+        transparent 65%
+      ),
+      radial-gradient(
+        color-mix(in srgb, var(--color-midnight) 6%, transparent) 1px,
+        transparent 1px
+      ),
+      var(--color-paper);
+    background-size:
+      auto,
+      auto,
+      22px 22px,
+      auto;
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      0 0;
+  }
+
   /* The lavender hero wash. Marketing only — never behind the product. */
   .hero-wash {
     background: radial-gradient(
