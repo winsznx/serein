@@ -216,7 +216,7 @@ Etherscan needs an API key. Source verification should never be blocked on a cre
 not have. Sourcify needs none and produces `exact_match`, a stronger claim than Etherscan's — the
 published source compiles to precisely the deployed bytecode. Etherscan runs too when a key is set.
 
-_(The `hardhat-verify` Sourcify task is broken against the current API; see CONTRIBUTIONS.md.)_
+_(The `hardhat-verify` Sourcify task is broken against the current API; see [internal upstream findings](docs/internal/CONTRIBUTIONS.md).)_
 
 ---
 

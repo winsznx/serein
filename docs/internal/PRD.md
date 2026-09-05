@@ -2149,17 +2149,17 @@ Root should normally contain:
 
 ```text
 README.md
-PRD.md
-DESIGN.md
+docs/internal/PRD.md
+docs/internal/DESIGN.md
 ARCHITECTURE.md
 SECURITY.md
 PRIVACY.md
-CONTRIBUTIONS.md
+docs/internal/CONTRIBUTIONS.md
 DECISIONS.md
 SETUP.md
 EVIDENCE.md
 BENCHMARKS.md
-DEMO.md
+docs/internal/DEMO.md
 LICENSE
 .env.example
 ```
@@ -2807,4 +2807,3 @@ The build is locked around this central claim:
 > **Serein is a confidential no-loss prize-savings protocol with encrypted time-weighted balances, mathematically exact unbiased FHE winner selection, structurally isolated principal, encrypted winner/prize state, resumable permissionless draw execution, and independently reproducible proof.**
 
 Any implementation change that weakens that claim requires explicit justification in `DECISIONS.md`.
-
